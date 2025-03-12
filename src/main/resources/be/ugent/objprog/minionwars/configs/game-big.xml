@@ -1,0 +1,154 @@
+<configuration>
+    <minions>
+        <militia name="Burgerwacht" cost="1" movement="3" range="1 2" attack="1" defence="3" />
+        <spear name="Speervechter" cost="3" movement="3" range="1 2" attack="3" defence="3" effect="poison" effect-value="2" />
+        <sword name="Zwaardvechter" cost="4" movement="3" range="1 1" attack="3" defence="5" />
+        <axe name="Bijlstrijder" cost="3" movement="2" range="1 1" attack="5" defence="3" />
+        <archer name="Boogschutter" cost="3" movement="3" range="1 3" attack="2" defence="5" />
+        <scout name="Verkenner" cost="2" movement="8" range="1 1" attack="1" defence="5" effect="heal" effect-value="2" />
+        <cavalry name="Ruiter" cost="5" movement="5" range="1 2" attack="4" defence="5" effect="rage" effect-value="2" />
+        <mounted-archer name="Bereden boogschutter" cost="3" movement="3" range="1 3" attack="3" defence="3" effect="paralysis" effect-value="1" />
+        <heavy-cavalry name="Gepantserde Ruiter" cost="7" movement="4" range="1 1" attack="3" defence="11" effect="slow" effect-value="1" />
+        <catapult name="Katapult" cost="7" movement="1" range="2 5" attack="4" defence="4" effect="burn" effect-value="2" />
+        <trebuchet name="Trebuchet" cost="8" movement="1" range="3 7" attack="3" defence="4" effect="burn" effect-value="1" />
+    </minions>
+
+    <powers>
+        <fireball radius="1" value="2" effect="burn" effect-value="2" />
+        <lightning radius="0" value="1" effect="paralysis" effect-value="1" />
+        <heal radius="2" value="3" />
+    </powers>
+
+    <field>
+        <dirt x="0" y="0" homebase="1" />
+        <dirt x="1" y="0" homebase="1" />
+        <dirt x="2" y="0" homebase="1"/>
+        <dirt x="3" y="0" homebase="1"/>
+        <dirt x="4" y="0" />
+        <dirt x="5" y="0" />
+        <dirt x="6" y="0" />
+        <dirt x="7" y="0" />
+        <dirt x="8" y="0" />
+        <dirt x="9" y="0" />
+        <dirt x="10" y="0" />
+        <dirt x="0" y="1" homebase="1" />
+        <dirt x="1" y="1" homebase="1" />
+        <dirt x="2" y="1" homebase="1" />
+        <dirt x="3" y="1" homebase="1"/>
+        <dirt x="4" y="1" />
+        <dirt x="5" y="1" />
+        <dirt x="6" y="1" />
+        <mountains x="7" y="1" />
+        <mountains x="8" y="1" />
+        <mountains x="9" y="1" />
+        <dirt x="10" y="1" />
+        <dirt x="0" y="2" homebase="1" />
+        <dirt x="1" y="2" homebase="1" />
+        <dirt x="2" y="2" homebase="1"/>
+        <dirt x="3" y="2" homebase="1"/>
+        <dirt x="4" y="2" />
+        <dirt x="5" y="2" />
+        <water x="6" y="2" />
+        <water x="7" y="2" />
+        <water x="8" y="2" />
+        <mountains x="9" y="2" />
+        <dirt x="10" y="2"/>
+        <dirt x="0" y="3" homebase="1"/>
+        <dirt x="1" y="3" homebase="1"/>
+        <dirt x="2" y="3" homebase="1"/>
+        <dirt x="3" y="3" homebase="1"/>
+        <dirt x="7" y="3" />
+        <mountains x="8" y="3" />
+        <mountains x="9" y="3"/>
+        <dirt x="10" y="3"/>
+        <dirt x="0" y="4"/>
+        <dirt x="1" y="4"/>
+        <dirt x="2" y="4" />
+        <dirt x="3" y="4" />
+        <dirt x="7" y="4" />
+        <water x="8" y="4"/>
+        <water x="9" y="4"/>
+        <water x="10" y="4"/>
+        <mountains x="0" y="5" />
+        <dirt x="1" y="5" />
+        <dirt x="2" y="5" />
+        <dirt x="3" y="5" />
+        <forest x="4" y="5" />
+        <forest x="5" y="5" />
+        <forest x="6" y="5" />
+        <forest x="7" y="5" />
+        <dirt x="8" y="5" />
+        <mountains x="9" y="5"/>
+        <mountains x="10" y="5"/>
+        <mountains x="0" y="6" />
+        <mountains x="1" y="6" />
+        <dirt x="2" y="6" />
+        <dirt x="3" y="6" />
+        <forest x="4" y="6" />
+        <forest x="5" y="6" />
+        <forest x="6" y="6" />
+        <forest x="7" y="6" />
+        <dirt x="8" y="6"/>
+        <mountains x="9" y="6"/>
+        <dirt x="10" y="6"/>
+        <water x="0" y="7" />
+        <water x="1" y="7" />
+        <water x="2" y="7" />
+        <mountains x="3" y="7" />
+        <mountains x="7" y="7" />
+        <dirt x="8" y="7" />
+        <dirt x="9" y="7" />
+        <dirt x="10" y="7" />
+        <dirt x="0" y="8" />
+        <mountains x="1" y="8" />
+        <dirt x="2" y="8" />
+        <dirt x="3" y="8" />
+        <dirt x="7" y="8" homebase="2"/>
+        <dirt x="8" y="8" homebase="2"/>
+        <dirt x="9" y="8" homebase="2"/>
+        <dirt x="10" y="8" homebase="2"/>
+        <dirt x="0" y="9" />
+        <mountains x="1" y="9" />
+        <water x="2" y="9" />
+        <water x="3" y="9" />
+        <water x="4" y="9" />
+        <dirt x="5" y="9" />
+        <dirt x="6" y="9" />
+        <dirt x="7" y="9" homebase="2"/>
+        <dirt x="8" y="9" homebase="2"/>
+        <dirt x="9" y="9" homebase="2"/>
+        <dirt x="10" y="9" homebase="2"/>
+        <dirt x="0" y="10" />
+        <mountains x="1" y="10" />
+        <mountains x="2" y="10" />
+        <dirt x="3" y="10" />
+        <dirt x="4" y="10" />
+        <dirt x="5" y="10" />
+        <dirt x="6" y="10" />
+        <dirt x="7" y="10" homebase="2"/>
+        <dirt x="8" y="10" homebase="2"/>
+        <dirt x="9" y="10" homebase="2"/>
+        <dirt x="10" y="10" homebase="2"/>
+        <dirt x="0" y="11" />
+        <dirt x="1" y="11" />
+        <dirt x="2" y="11" />
+        <dirt x="3" y="11" />
+        <dirt x="4" y="11" />
+        <dirt x="5" y="11" />
+        <dirt x="6" y="11" />
+        <dirt x="7" y="11" homebase="2"/>
+        <dirt x="8" y="11" homebase="2"/>
+        <dirt x="9" y="11" homebase="2"/>
+        <dirt x="10" y="11" homebase="2"/>
+    </field>
+
+    <effects>
+        <burn duration="1" value="2" />
+        <paralysis duration="1" />
+        <heal duration="1" value="3" />
+        <poison duration="2" value="1" />
+        <slow duration="3" value="1" />
+        <blindness duration="3" value="1" />
+        <rage duration="1" value="2" />
+    </effects>
+</configuration>
