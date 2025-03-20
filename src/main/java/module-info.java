@@ -4,4 +4,5 @@ open module be.ugent.objprog.minionwars {
     requires org.jdom2;
 
     exports be.ugent.objprog.minionwars;
+    exports Controllers;
 }

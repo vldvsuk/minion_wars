@@ -1,0 +1,6 @@
+.stack-pane-background {
+    -fx-background-image: url("images/splash-start.jpg");
+    -fx-background-size: cover; /* volledige ruimte bedekt */
+    -fx-background-position: center; /* Centreert*/
+    -fx-background-repeat: no-repeat; /* Voorkomt herhaling*/
+}
