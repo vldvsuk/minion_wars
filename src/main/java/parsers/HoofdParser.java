@@ -28,10 +28,7 @@ public class HoofdParser {
         return powerParser.parsePowers();
     }
 
-    public Field parseField() {
-        return fieldParser.parseField();
-    }
-
     public List<Effect> parseEffects() {
         return effectParser.parseEffects();
     }
+}
