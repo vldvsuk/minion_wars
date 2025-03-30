@@ -4,15 +4,11 @@ public class Power {
     private String type;
     private int radius;
     private int value;
-    private String effect;
-    private int effectValue;
 
-    public Power(String type, int radius, int value, String effect, int effectValue) {
+    public Power(String type, int radius, int value) {
         this.type = type;
         this.radius = radius;
         this.value = value;
-        this.effect = effect;
-        this.effectValue = effectValue;
     }
 
     // Getters en setters
@@ -21,9 +17,6 @@ public class Power {
         return getClass().getSimpleName() + "{" +
                 "type='" + type + '\'' +
                 ", radius=" + radius +
-                ", value=" + value +
-                ", effect='" + effect + '\'' +
-                ", effectValue=" + effectValue +
-                '}';
+                ", value=" + value + "}";
     }
 }

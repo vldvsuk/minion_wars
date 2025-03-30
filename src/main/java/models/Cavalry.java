@@ -1,7 +1,26 @@
 package models;
 
 public class Cavalry extends Minion{
-    public Cavalry(String name, int cost, int movement, String range, int attack, int defence, String effect, int effectValue) {
-        super(name, cost, movement, range, attack, defence, effect, effectValue);
+    private String effect;
+    private int effectValue;
+
+    public Cavalry(String type, String name, int cost, int movement, String range, int attack, int defence, String effect, int effectValue) {
+        super(type, name, cost, movement, range, attack, defence);
+        this.effect = effect;
+        this.effectValue = effectValue;
+    }
+
+    // Getters voor effect en effectValue
+    public String getEffect() {
+        return effect;
+    }
+
+    public int getEffectValue() {
+        return effectValue;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", effect='" + effect + '\'' + ", effectValue=" + effectValue + '}';
     }
 }

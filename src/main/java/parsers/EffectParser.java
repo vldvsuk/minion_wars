@@ -1,7 +1,6 @@
 package parsers;
 
-import effects.Effect;
-import effects.EffectFactory;
+import effects.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -35,7 +34,7 @@ public class EffectParser {
                 int duration = Integer.parseInt(effectElement.getAttributeValue("duration"));
                 int value = Integer.parseInt(effectElement.getAttributeValue("value", "0")); // Standaardwaarde is 0
 
-                Effect effect = EffectFactory.createEffect(type, duration, value);
+                Effect effect = createEffect(type, duration, value);
                 effects.add(effect);
             }
 
@@ -45,4 +44,16 @@ public class EffectParser {
 
         return effects;
     }
+    public static Effect createEffect(String type, int duration, int value) {
+        return switch (type.toLowerCase()) {
+            case "burn" -> new Burn(duration, value);
+            case "paralysis"-> new Paralysis(duration);
+            case "heal" -> new HealEffect(duration, value);
+            case "poison"-> new Poison(duration, value);
+            case "slow" -> new Slow(duration, value);
+            case "blindness"-> new Blindness(duration, value);
+            case "rage" -> new Rage(duration, value);
+            default -> throw new IllegalArgumentException("Onbekend effect-type: " + type);
+            };
+        }
 }

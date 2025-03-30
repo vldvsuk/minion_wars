@@ -4,8 +4,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import powers.Power;
-import powers.PowerFactory;
+import powers.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,7 +37,7 @@ public class PowerParser {
                 String effect = powerElement.getAttributeValue("effect", "none");
                 int effectValue = Integer.parseInt(powerElement.getAttributeValue("effect-value", "0"));
 
-                Power power = PowerFactory.createPower(type, radius, value, effect, effectValue);
+                Power power = createPower(type, radius, value, effect, effectValue);
                 powers.add(power);
             }
 
@@ -47,5 +46,15 @@ public class PowerParser {
         }
 
         return powers;
+
+    }
+
+    public static Power createPower(String type, int radius, int value, String effect, int effectValue) {
+        return switch (type.toLowerCase()) {
+            case "fireball" -> new Fireball(radius, value, effect, effectValue);
+            case "lightning" -> new Lightning(radius, value, effect, effectValue);
+            case "heal" -> new Heal(radius, value);
+            default -> throw new IllegalArgumentException("Onbekend power-type: " + type);
+        };
     }
 }

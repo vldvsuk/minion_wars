@@ -46,9 +46,9 @@ public class FXController {
 
     @FXML
     protected void onStartButtonClick() throws IOException {
-        String naamSpeler1 = speler1Field.getText().trim();
-        String naamSpeler2 = speler2Field.getText().trim();
-        String muntenText = muntenField.getText().trim();
+        String naamSpeler1 = speler1Field.getText();
+        String naamSpeler2 = speler2Field.getText();
+        String muntenText = muntenField.getText();
 
         boolean fout = false;
 
@@ -83,20 +83,18 @@ public class FXController {
             FXMLLoader fxmlLoader = new FXMLLoader(MinionWars.class.getResource("SpelBegint.fxml"));
             Scene nieuweScene = new Scene(fxmlLoader.load(), 1500, 900);
             stage.setScene(nieuweScene);
+
+            Controller2 controller2 = fxmlLoader.getController();
+            controller2.setStage(stage);
+            controller2.setSpelerNamen(naamSpeler1, naamSpeler2);
+            controller2.setMunten(Integer.parseInt(muntenText));
             stage.centerOnScreen();
             stage.setResizable(true);
-
-
-
-            MinionParser parser = new MinionParser();
-            List<Minion> minions = parser.parseMinions();
-            for (Minion minion : minions) {
-                System.out.println(minion);
-            }
-
         }
+
     }
 }
+
 
 
 
