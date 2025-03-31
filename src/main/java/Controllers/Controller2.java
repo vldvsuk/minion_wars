@@ -6,8 +6,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
-import javafx.scene.effect.BlurType;
-import javafx.scene.effect.InnerShadow;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -45,8 +43,7 @@ public class Controller2 {
     private VBox minionsContainer;
     @FXML
     private AnchorPane gameBoardContainer;
-    @FXML
-    private ScrollPane gameBoardScroll;
+
 
 
     public void setStage(Stage stage) {
@@ -70,23 +67,25 @@ public class Controller2 {
         coinImageView.setImage(coinImage);
 
         splitPane.getDividers().get(0).positionProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(() -> splitPane.setDividerPositions(0.26));
+            Platform.runLater(() -> splitPane.setDividerPositions(0.25));
         });
 
 
         MinionParser parser = new MinionParser();
         List<Minion> minions = parser.parseMinions();
-
         for (Minion minion : minions) {
             Button minionButton = createMinionButton(minion);
             minionsContainer.getChildren().add(minionButton);
         }
+
+
         FieldParser fieldParser = new FieldParser();
         List<Tile> tiles = fieldParser.parseField();
         for (Tile tile : tiles) {
             Polygon hex = createHexagon(tile);
             gameBoardContainer.getChildren().add(hex);
         }
+
     }
 
     private Button createMinionButton(Minion minion) {
@@ -97,7 +96,7 @@ public class Controller2 {
         button.setPrefHeight(125);
         button.setStyle("-fx-padding: 0 10 0 0;");
 
-        HBox content = new HBox(24);
+        HBox content = new HBox(20);
         content.setAlignment(Pos.CENTER_LEFT);
 
         ImageView imageView = new ImageView();
@@ -116,9 +115,9 @@ public class Controller2 {
             imageView.setImage(fallback);
         }
 
-        HBox mainContent = new HBox(30);
+        HBox mainContent = new HBox(25);
         mainContent.setAlignment(Pos.CENTER_LEFT);
-        mainContent.setStyle("-fx-padding: 0 0 0 10;"); // Padding aanpassen
+        mainContent.setStyle("-fx-padding: 0 0 0 10;");
 
         // Minion name
         Label nameLabel = new Label(minion.getName());
@@ -172,50 +171,57 @@ public class Controller2 {
         }
         Label defenceLabel = new Label(String.valueOf(minion.getDefence()));
         defenceLabel.getStyleClass().add("defence-stat");
-        defenseBox.getChildren().addAll(defenseIcon, defenceLabel);
 
+
+        defenseBox.getChildren().addAll(defenseIcon, defenceLabel);
         statsBox.getChildren().addAll(coinBox, attackBox, defenseBox);
         mainContent.getChildren().addAll(nameLabel, statsBox);
-
         content.getChildren().addAll(imageView, mainContent);
         button.setGraphic(content);
 
         return button;
     }
-    public Polygon createHexagon(Tile tile) {
-        // Hexagon coördinaten
-        double hexSize = 40.0;
-        double hexWidth = hexSize * 2;
-        double hexHeight = Math.sqrt(3) * hexSize;
 
-        double x = tile.getX() * hexWidth * 0.75;
-        double y = tile.getY() * hexHeight + (tile.getX() % 2) * hexHeight / 2;
+
+    public Polygon createHexagon(Tile tile) {
+
+        double hexSize = 74.0;
+        double n = Math.sqrt(hexSize * hexSize * 0.75);
+        double hexWidth = 2 * n;
+        double hexHeight = 2 * hexSize;
+
+
+        double xCoord = tile.getX() * hexWidth + (tile.getY() % 2) * n;
+        double yCoord = tile.getY() * hexHeight * 0.75;
+
+        xCoord += 80;
+        yCoord += 40;
 
 
         Polygon hex = new Polygon();
         hex.getPoints().addAll(
-                x + hexWidth * 0.5, y,
-                x + hexWidth, y + hexHeight * 0.25,
-                x + hexWidth, y + hexHeight * 0.75,
-                x + hexWidth * 0.5, y + hexHeight,
-                x, y + hexHeight * 0.75,
-                x, y + hexHeight * 0.25
+                xCoord, yCoord,                         // Punt boven
+                xCoord + n, yCoord + hexSize * 0.5,          // Rechts boven
+                xCoord + n, yCoord + hexSize * 1.5,          // Rechts onder
+                xCoord, yCoord + 2 * hexSize,                // Punt onder
+                xCoord - n, yCoord + hexSize * 1.5,          // Links onder
+                xCoord - n, yCoord + hexSize * 0.5           // Links boven
         );
+
         try {
             String imagePath = "/be/ugent/objprog/minionwars/images/tiles/" + tile.getType().toLowerCase() + ".png";
-
             ImagePattern imagePattern = new ImagePattern(
                     new Image(getClass().getResourceAsStream(imagePath))
             );
             hex.setFill(imagePattern);
         } catch (Exception e) {
             System.err.println("Afbeelding niet gevonden voor: " + tile.getType());
-            hex.setFill(Color.LIGHTGRAY); // Fallback kleur
+            hex.setFill(Color.LIGHTGRAY);
         }
 
         hex.setStroke(Color.BLACK);
+        hex.setStrokeWidth(1.5);
 
-        // Voeg event handler toe
         hex.setOnMouseClicked(e -> {
             System.out.printf("Tile clicked: %s at (%d,%d)%n",
                     tile.getType(), tile.getX(), tile.getY());

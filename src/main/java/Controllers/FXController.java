@@ -81,7 +81,7 @@ public class FXController {
 
         if (!fout) {
             FXMLLoader fxmlLoader = new FXMLLoader(MinionWars.class.getResource("SpelBegint.fxml"));
-            Scene nieuweScene = new Scene(fxmlLoader.load(), 1500, 900);
+            Scene nieuweScene = new Scene(fxmlLoader.load(), 1600, 900);
             stage.setScene(nieuweScene);
 
             Controller2 controller2 = fxmlLoader.getController();
