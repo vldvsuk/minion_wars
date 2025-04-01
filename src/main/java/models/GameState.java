@@ -74,6 +74,10 @@ public class GameState {
         placedMinions.put(tile, minion);
     }
 
+    public boolean canAffordMinion(Minion minion) {
+        return minion.getCost() <= getCurrentCoins();
+    }
+
     public void removeMinion(Tile tile) {
         placedMinions.remove(tile);
     }

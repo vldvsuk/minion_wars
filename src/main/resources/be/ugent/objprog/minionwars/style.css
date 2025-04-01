@@ -21,6 +21,18 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 3);
 }
 
+.minion-button.unaffordable {
+    -fx-border-color: #ff0000;
+    -fx-opacity: 0.7;
+    -fx-background-color: rgba(255, 0, 0, 0.3);
+
+}
+
+.minion-button.selected {
+    -fx-border-color: #ffd700;
+    -fx-opacity: 1.0;
+}
+
 .minion-image-container {
     -fx-background-radius: 50%;
     -fx-background-color: linear-gradient(to bottom, #ffffff, #f0f0f0);

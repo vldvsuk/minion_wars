@@ -62,7 +62,20 @@ public class Controller2 {
     private void updateUI() {
         naamLabel.setText(gameState.getCurrentPlayerName());
         coinsLabel.setText(String.valueOf(gameState.getCurrentCoins()));
-        hexList.forEach(btn -> btn.setStyle(""));
+
+        minionButtons.forEach(button -> {
+            Minion minion = (Minion) button.getUserData();
+
+            button.getStyleClass().removeAll("unaffordable", "selected");
+
+            if (!gameState.canAffordMinion(minion)) {
+                button.getStyleClass().add("unaffordable");
+            } else if (gameState.getSelectedMinion() == minion) {
+                button.getStyleClass().add("selected");
+            }
+        });
+
+        hexList.forEach(hex -> hex.setStyle(""));
     }
 
     @FXML
@@ -70,7 +83,6 @@ public class Controller2 {
         gameState.switchPlayer();
         gameState.setSelectedMinion(null);
         gameState.setSelectedTile(null);
-        minionButtons.forEach(btn -> btn.setStyle(""));
         updateUI();
     }
 
@@ -117,7 +129,7 @@ public class Controller2 {
 
         ImageView imageView = new ImageView();
         try {
-            Image image = new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/minions/" + minion.getType().toLowerCase() + ".png"));
+            Image image = new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/minions/" + minion.getType() + ".png"));
             imageView.setImage(image);
             imageView.setFitHeight(100);
             imageView.setFitWidth(100);
@@ -198,13 +210,20 @@ public class Controller2 {
 
         button.setOnAction(e -> {
             if (gameState.getSelectedMinion() == minion) {
+                // Deselecteer als dezelfde minion al geselecteerd was
                 gameState.setSelectedMinion(null);
-                button.setStyle("");
-            } else {
+                button.getStyleClass().remove("selected");
+            } else if (gameState.canAffordMinion(minion)) {
+                // Selecteer nieuwe minion
                 gameState.setSelectedMinion(minion);
-                minionsContainer.getChildren().forEach(btn ->
-                        btn.setStyle(btn == button ? "-fx-border-color: gold;" : ""));
+
+                // Verwijder selectie van alle buttons
+                minionButtons.forEach(btn -> btn.getStyleClass().remove("selected"));
+
+                // Voeg selectie class toe aan huidige button
+                button.getStyleClass().add("selected");
             }
+            // updateUI wordt automatisch aangeroepen na plaatsing
         });
 
         return button;
@@ -300,6 +319,6 @@ public class Controller2 {
         gameState.setSelectedTile(tile);
         hex.getStyleClass().add("selected-hex");
     }
+
+
 }
-
-
