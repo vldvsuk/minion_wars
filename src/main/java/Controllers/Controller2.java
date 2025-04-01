@@ -1,11 +1,12 @@
 package Controllers;
 
-import grond.Tile;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -18,18 +19,21 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import models.GameState;
 import models.Minion;
 import parsers.FieldParser;
 import parsers.MinionParser;
 
+import java.util.ArrayList;
 import java.util.List;
+import grond.Tile;
 
 public class Controller2 {
     private Stage stage;
-    private String speler1Naam;
-    private String speler2Naam;
-    private int munten;
-    private boolean isSpeler1AanZet = true;
+    private GameState gameState;
+    private List<Button> minionButtons = new ArrayList<>();
+    private List<Polygon> hexList = new ArrayList<>();
+    private Polygon currentlySelectedHex = null;
 
     @FXML
     private SplitPane splitPane;
@@ -50,19 +54,30 @@ public class Controller2 {
         this.stage = stage;
     }
 
-    public void setSpelerNamen(String speler1, String speler2) {
-        this.speler1Naam = speler1;
-        this.speler2Naam = speler2;
+    public void setInfo(String speler1, String speler2, int munten) {
+        this.gameState = new GameState(speler1, speler2, munten);
         updateUI();
     }
 
-    public void setMunten(int munten) {
-        this.munten = munten;
-        updateUI();
+    private void updateUI() {
+        naamLabel.setText(gameState.getCurrentPlayerName());
+        coinsLabel.setText(String.valueOf(gameState.getCurrentCoins()));
+        hexList.forEach(btn -> btn.setStyle(""));
     }
 
     @FXML
+    private void handleBeurtButton() {
+        gameState.switchPlayer();
+        gameState.setSelectedMinion(null);
+        gameState.setSelectedTile(null);
+        minionButtons.forEach(btn -> btn.setStyle(""));
+        updateUI();
+    }
+
+
+    @FXML
     public void initialize() {
+
         Image coinImage = new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/coin-FFB900.png"));
         coinImageView.setImage(coinImage);
 
@@ -91,12 +106,13 @@ public class Controller2 {
     private Button createMinionButton(Minion minion) {
         Button button = new Button();
         button.getStyleClass().add("minion-button");
+        minionButtons.add(button);
         button.setMaxWidth(Double.MAX_VALUE);
         button.setMinHeight(125);
         button.setPrefHeight(125);
-        button.setStyle("-fx-padding: 0 10 0 0;");
+        button.setUserData(minion);
 
-        HBox content = new HBox(20);
+        HBox content = new HBox(17);
         content.setAlignment(Pos.CENTER_LEFT);
 
         ImageView imageView = new ImageView();
@@ -115,7 +131,7 @@ public class Controller2 {
             imageView.setImage(fallback);
         }
 
-        HBox mainContent = new HBox(25);
+        HBox mainContent = new HBox(22);
         mainContent.setAlignment(Pos.CENTER_LEFT);
         mainContent.setStyle("-fx-padding: 0 0 0 10;");
 
@@ -179,6 +195,18 @@ public class Controller2 {
         content.getChildren().addAll(imageView, mainContent);
         button.setGraphic(content);
 
+
+        button.setOnAction(e -> {
+            if (gameState.getSelectedMinion() == minion) {
+                gameState.setSelectedMinion(null);
+                button.setStyle("");
+            } else {
+                gameState.setSelectedMinion(minion);
+                minionsContainer.getChildren().forEach(btn ->
+                        btn.setStyle(btn == button ? "-fx-border-color: gold;" : ""));
+            }
+        });
+
         return button;
     }
 
@@ -199,6 +227,8 @@ public class Controller2 {
 
 
         Polygon hex = new Polygon();
+        hexList.add(hex);
+
         hex.getPoints().addAll(
                 xCoord, yCoord,                         // Punt boven
                 xCoord + n, yCoord + hexSize * 0.5,          // Rechts boven
@@ -221,29 +251,55 @@ public class Controller2 {
 
         hex.setStroke(Color.BLACK);
         hex.setStrokeWidth(1.5);
-
-        hex.setOnMouseClicked(e -> {
-            System.out.printf("Tile clicked: %s at (%d,%d)%n",
-                    tile.getType(), tile.getX(), tile.getY());
-        });
+        hex.setUserData(tile);
+        hex.setOnMouseClicked(e -> handleTileClick(tile, hex));
 
         return hex;
     }
 
-
-
-    private void updateUI() {
-        if (isSpeler1AanZet) {
-            naamLabel.setText(speler1Naam);
-        } else {
-            naamLabel.setText(speler2Naam);
+    private void handleTileClick(Tile tile, Polygon hex) {
+        if (currentlySelectedHex != null) {
+            currentlySelectedHex.getStyleClass().remove("selected-hex");
         }
-        coinsLabel.setText(String.valueOf(munten));
+
+        if (currentlySelectedHex == hex) {
+            currentlySelectedHex = null;
+            gameState.setSelectedTile(null);
+            return;
+        }
+
+        if (gameState.getSelectedMinion() != null) {
+            if (gameState.isValidPlacement(tile)) {
+                placeMinion(tile, hex);
+            }
+        } else if (gameState.isOccupied(tile)) {
+            selectMinion(tile, hex);
+            currentlySelectedHex = hex;
+        }
     }
 
-    @FXML
-    private void handleBeurtButton() {
-        isSpeler1AanZet = !isSpeler1AanZet;
+
+    public void placeMinion(Tile tile, Polygon hex) {
+
+        gameState.deductCoins(gameState.getSelectedMinion().getCost());
+        try {
+            ImagePattern minionImage = new ImagePattern(
+                    new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/minions/" + gameState.getSelectedMinion().getType() + ".png"))
+            );
+            hex.setFill(minionImage);
+        } catch (Exception e) {
+            hex.setFill(Color.RED); // Foutkleur
+        }
+
+        gameState.placeMinion(tile, gameState.getSelectedMinion());
         updateUI();
+
+    }
+
+    private void selectMinion(Tile tile, Polygon hex) {
+        gameState.setSelectedTile(tile);
+        hex.getStyleClass().add("selected-hex");
     }
 }
+
+

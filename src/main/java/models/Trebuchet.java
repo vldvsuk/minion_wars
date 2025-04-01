@@ -11,7 +11,6 @@ public class Trebuchet extends Minion {
         this.effectValue = effectValue;
     }
 
-    // Getters voor effect en effectValue
     public String getEffect() {
         return effect;
     }

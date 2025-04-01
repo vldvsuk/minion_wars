@@ -10,6 +10,8 @@
     -fx-background-color: #f8f8f8;
     -fx-border-color: #ddd;
     -fx-border-radius: 5px;
+    -fx-padding: 0 10 0 0;
+    -fx-stroke-width: 3;
     -fx-background-radius: 5px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
@@ -63,4 +65,8 @@
     -fx-text-fill: #FFB900;
     -fx-font-weight: bold;
     -fx-font-size: 17px;
+}
+.selected-hex {
+    -fx-stroke: gold;
+    -fx-stroke-width: 5;
 }
