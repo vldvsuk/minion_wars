@@ -22,10 +22,8 @@ import models.GameState;
 import models.Minion;
 import parsers.FieldParser;
 import parsers.MinionParser;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import grond.Tile;
 
@@ -88,7 +86,16 @@ public class Controller2 {
         gameState.switchPlayer();
         gameState.setSelectedMinion(null);
         gameState.setSelectedTile(null);
+        currentlySelectedHex = null;
         updateUI();
+
+        // Forceer update van alle overlays
+        for (Polygon hex : hexList) {
+            HexData data = (HexData) hex.getUserData();
+            data.overlay.setFill(Color.TRANSPARENT);
+            data.overlay.setOpacity(0);
+        }
+        markHomebases();
     }
 
     public void setStage(Stage stage) {
@@ -339,8 +346,11 @@ public class Controller2 {
                 placeMinion(tile, hex);
             }
         } else if (gameState.isOccupied(tile)) {
-            selectMinion(tile, overlayHex);
-            currentlySelectedHex = hex;
+            // Alleen selecteren als de minion van de huidige speler is
+            if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                selectMinion(tile, overlayHex);
+                currentlySelectedHex = hex;
+            }
         }
     }
 
@@ -364,11 +374,13 @@ public class Controller2 {
     }
 
     private void selectMinion(Tile tile, Polygon overlayHex) {
-        gameState.setSelectedTile(tile);
-        overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
-        overlayHex.setStyle("-fx-stroke-width: 5;");
-        overlayHex.setOpacity(0.5);
-        overlayHex.setStroke(Color.GREEN);
+        if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
+            gameState.setSelectedTile(tile);
+            overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
+            overlayHex.setStyle("-fx-stroke-width: 5;");
+            overlayHex.setOpacity(0.5);
+            overlayHex.setStroke(Color.GREEN);
+        }
     }
 
     private void markHomebases() {
@@ -377,14 +389,19 @@ public class Controller2 {
             Tile tile = data.tile;
             Polygon overlayHex = data.overlay;
 
+            // Reset overlay
+            overlayHex.setFill(Color.TRANSPARENT);
+            overlayHex.setOpacity(0);
+            overlayHex.setStroke(Color.BLACK);
+            overlayHex.setStrokeWidth(1.5);
+
             if (gameState.isPlacementPhase()) {
-                // Tijdens placement phase
                 if (gameState.isOccupied(tile)) {
-                    // Minion tiles - overlay transparant
-                    overlayHex.setFill(Color.TRANSPARENT);
-                    overlayHex.setOpacity(0);
+                    if (!gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                        overlayHex.setFill(gameState.isSpeler1AanZet() ? Color.RED : Color.RED);
+                        overlayHex.setOpacity(0.4);
+                    }
                 } else {
-                    // Lege tiles - kleur op basis van homebase
                     if (gameState.isSpeler1AanZet()) {
                         overlayHex.setFill(tile.getHomebase() == 1 ? Color.YELLOW : Color.RED);
                     } else {
@@ -393,22 +410,15 @@ public class Controller2 {
                     overlayHex.setOpacity(0.4);
                 }
             } else {
-                // Na placement phase
-                if (hex == currentlySelectedHex && gameState.isOccupied(tile)) {
-                    // Alleen geselecteerde minions highlighten
+                if (hex == currentlySelectedHex && gameState.isOccupied(tile) &&
+                        gameState.isMinionOwnedByCurrentPlayer(tile)) {
                     overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
                     overlayHex.setOpacity(0.5);
-                } else {
-                    overlayHex.setFill(Color.TRANSPARENT);
-                    overlayHex.setOpacity(0);
                 }
             }
-
-            // Behoud altijd de rand
-            overlayHex.setStroke(Color.BLACK);
-            overlayHex.setStrokeWidth(1.5);
         }
     }
+
 
     private void handleKeyPress(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE) {
@@ -418,7 +428,7 @@ public class Controller2 {
                 Minion removedMinion = gameState.getPlacedMinion(selectedTile);
                 gameState.refundCoins(removedMinion.getCost());
 
-                resetTileVisual(selectedTile); //visueel
+                resetTileVisual(selectedTile);
                 gameState.removeMinion(selectedTile);
 
                 gameState.setSelectedTile(null);
@@ -437,7 +447,6 @@ public class Controller2 {
             HexData data = (HexData) hex.getUserData();
             if (data.tile.equals(tile)) {
                 try {
-                    // Reset hoofdhex
                     String imagePath = "/be/ugent/objprog/minionwars/images/tiles/" +
                             tile.getType().toLowerCase() + ".png";
                     ImagePattern original = new ImagePattern(
@@ -454,14 +463,11 @@ public class Controller2 {
                     data.overlay.setStroke(Color.BLACK);
                     data.overlay.setStrokeWidth(1.5);
                     data.overlay.setStyle("");
-
-                    // Forceer update van homebase markeringen
                     markHomebases();
 
                 } catch (Exception e) {
                     hex.setFill(Color.LIGHTGRAY);
                     hex.setStroke(Color.BLACK);
-                    hex.setStrokeWidth(1.5);
                 }
                 break;
             }
@@ -475,12 +481,9 @@ public class Controller2 {
 
             if (gameState.isOccupied(tile)) {
                 if (gameState.isPlacementPhase()) {
-                    // Tijdens placement phase - alleen eigen minions tonen
-                    boolean showMinion = (gameState.isSpeler1AanZet() && tile.getHomebase() == 1) ||
-                            (!gameState.isSpeler1AanZet() && tile.getHomebase() == 2);
+                    boolean showMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
 
                     if (showMinion) {
-                        // Toon minion image
                         Minion minion = gameState.getPlacedMinion(tile);
                         try {
                             ImagePattern minionImage = new ImagePattern(
@@ -491,11 +494,10 @@ public class Controller2 {
                             hex.setFill(Color.RED);
                         }
                     } else {
-                        // Reset naar tile image
                         resetTileToOriginal(hex, tile);
                     }
                 } else {
-                    // Na placement phase - alle minions tonen
+                    // Na 2 alle minions tonen
                     Minion minion = gameState.getPlacedMinion(tile);
                     try {
                         ImagePattern minionImage = new ImagePattern(

@@ -7,7 +7,8 @@ import java.util.Map;
 
 
 public class GameState {
-    private Map<Tile, Minion> placedMinions = new HashMap<>();
+    private Map<Tile, Minion> speler1Minions = new HashMap<>();
+    private Map<Tile, Minion> speler2Minions = new HashMap<>();
     private Minion selectedMinion;
     private Tile selectedTile;
     private boolean isSpeler1AanZet = true;
@@ -74,11 +75,15 @@ public class GameState {
     }
 
     public boolean isOccupied(Tile tile) {
-        return placedMinions.containsKey(tile);
+        return speler1Minions.containsKey(tile) || speler2Minions.containsKey(tile);
     }
 
     public void placeMinion(Tile tile, Minion minion) {
-        placedMinions.put(tile, minion);
+        if (isSpeler1AanZet) {
+            speler1Minions.put(tile, minion);
+        } else {
+            speler2Minions.put(tile, minion);
+        }
     }
 
     public boolean canAffordMinion(Minion minion) {
@@ -86,13 +91,26 @@ public class GameState {
     }
 
     public void removeMinion(Tile tile) {
-        placedMinions.remove(tile);
+        speler1Minions.remove(tile);
+        speler2Minions.remove(tile);
+    }
+
+    public Minion getPlacedMinion(Tile tile) {
+        if (speler1Minions.containsKey(tile)) {
+            return speler1Minions.get(tile);
+        } else {
+            return speler2Minions.get(tile);
+        }
     }
 
     public boolean shouldShowMinion(Tile tile) {
-        return placedMinions.containsKey(tile) &&
-                (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2);
+        if (isSpeler1AanZet) {
+            return speler1Minions.containsKey(tile);
+        } else {
+            return speler2Minions.containsKey(tile);
+        }
     }
+
 
     public boolean isPlacementPhase() {
         return placementPhase;
@@ -103,7 +121,7 @@ public class GameState {
     }
 
     public boolean isValidPlacement(Tile tile) {
-        return!isOccupied(tile) &&
+        return !isOccupied(tile) &&
                 List.of("dirt", "forest", "mountains").contains(tile.getType()) &&
                 (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2) &&
                 getSelectedMinion().getCost() <= getCurrentCoins();
@@ -117,7 +135,12 @@ public class GameState {
         }
     }
 
-    public Minion getPlacedMinion(Tile tile) {
-        return placedMinions.get(tile);
+    public boolean isMinionOwnedByCurrentPlayer(Tile tile) {
+        if (isSpeler1AanZet) {
+            return speler1Minions.containsKey(tile);
+        } else {
+            return speler2Minions.containsKey(tile);
+        }
     }
+
 }
