@@ -329,6 +329,7 @@ public class Controller2 {
         Tile tile = data.tile;
         Polygon overlayHex = data.overlay;
 
+        // Reset vorige selectie
         if (currentlySelectedHex != null) {
             HexData prevData = (HexData) currentlySelectedHex.getUserData();
             prevData.overlay.setFill(Color.TRANSPARENT);
@@ -336,6 +337,7 @@ public class Controller2 {
         }
 
         if (currentlySelectedHex == hex) {
+            // Deselecteren
             currentlySelectedHex = null;
             gameState.setSelectedTile(null);
             return;
@@ -344,9 +346,11 @@ public class Controller2 {
         if (gameState.getSelectedMinion() != null) {
             if (gameState.isValidPlacement(tile)) {
                 placeMinion(tile, hex);
+            } else if (gameState.isOccupied(tile) && gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                selectMinion(tile, overlayHex);
+                currentlySelectedHex = hex;
             }
         } else if (gameState.isOccupied(tile)) {
-            // Alleen selecteren als de minion van de huidige speler is
             if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
                 selectMinion(tile, overlayHex);
                 currentlySelectedHex = hex;
