@@ -9,14 +9,14 @@
         <cavalry name="Ruiter" cost="5" movement="5" range="1 2" attack="4" defence="5" effect="rage" effect-value="2" />
         <mounted-archer name="Bereden boogschutter" cost="3" movement="3" range="1 3" attack="3" defence="3" effect="paralysis" effect-value="1" />
         <heavy-cavalry name="Gepantserde Ruiter" cost="7" movement="4" range="1 1" attack="3" defence="11" effect="slow" effect-value="1" />
-        <catapult name="Katapult" cost="7" movement="1" range="2 5" attack="4" defence="4" effect="burn" effect-value="2" />
-        <trebuchet name="Trebuchet" cost="8" movement="1" range="3 7" attack="3" defence="4" effect="burn" effect-value="1" />
+        <catapult name="Katapult" cost="7" movement="1" range="2 5" attack="4" defence="3" effect="burn" effect-value="3" />
+        <trebuchet name="Trebuchet" cost="8" movement="1" range="3 7" attack="3" defence="4" effect="burn" />
     </minions>
 
     <powers>
-        <fireball radius="1" value="2" effect="burn" effect-value="2" />
-        <lightning radius="0" value="1" effect="paralysis" effect-value="1" />
-        <heal radius="2" value="3" />
+        <fireball name="Vuurbal" radius="1" value="2" effect="burn" effect-value="2" />
+        <lightning name="Bliksem" radius="0" value="1" effect="paralysis" />
+        <heal name="Genezing"  radius="4" value="3" />
     </powers>
 
     <field>
@@ -143,12 +143,12 @@
     </field>
 
     <effects>
-        <burn duration="1" value="2" />
-        <paralysis duration="1" />
-        <heal duration="1" value="3" />
-        <poison duration="2" value="1" />
-        <slow duration="3" value="1" />
-        <blindness duration="3" value="1" />
-        <rage duration="1" value="2" />
+        <burn name="Brandschade" duration="2" value="2" />
+        <paralysis name="Verlamming" duration="2" />
+        <heal name="Genezing" duration="1" value="3" />
+        <poison name="Vergiftiging" duration="2" value="1" />
+        <slow name="Vertraging" duration="3" value="1" />
+        <blindness name="Blindheid" duration="3" value="1" />
+        <rage name="Woede" duration="1" value="2" />
     </effects>
 </configuration>
