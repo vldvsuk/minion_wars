@@ -109,4 +109,15 @@ public class GameState {
                 getSelectedMinion().getCost() <= getCurrentCoins();
 
     }
+    public void refundCoins(int amount) {
+        if (isSpeler1AanZet) {
+            speler1Coins += amount;
+        } else {
+            speler2Coins += amount;
+        }
+    }
+
+    public Minion getPlacedMinion(Tile tile) {
+        return placedMinions.get(tile);
+    }
 }
