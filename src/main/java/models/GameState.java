@@ -1,7 +1,6 @@
 package models;
 
 import grond.Tile;
-import models.Minion;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

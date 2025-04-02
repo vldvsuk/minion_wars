@@ -3,10 +3,7 @@ package Controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -26,13 +23,15 @@ import parsers.MinionParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import grond.Tile;
 
 public class Controller2 {
     private Stage stage;
     private GameState gameState;
-    private List<Button> minionButtons = new ArrayList<>();
-    private List<Polygon> hexList = new ArrayList<>();
+    private final List<Button> minionButtons = new ArrayList<>();
+    private final List<Polygon> hexList = new ArrayList<>();
     private Polygon currentlySelectedHex = null;
 
     @FXML
@@ -63,19 +62,34 @@ public class Controller2 {
         naamLabel.setText(gameState.getCurrentPlayerName());
         coinsLabel.setText(String.valueOf(gameState.getCurrentCoins()));
 
-        minionButtons.forEach(button -> {
-            Minion minion = (Minion) button.getUserData();
+        boolean anyAffordable = false; // of er betaalbare minions
 
+
+        for (Button button : minionButtons) {
+            Minion minion = (Minion) button.getUserData();
             button.getStyleClass().removeAll("unaffordable", "selected");
 
             if (!gameState.canAffordMinion(minion)) {
                 button.getStyleClass().add("unaffordable");
-            } else if (gameState.getSelectedMinion() == minion) {
-                button.getStyleClass().add("selected");
+            } else {
+                anyAffordable = true; // minstens 1 betaalbare minion
+                if (gameState.getSelectedMinion() == minion) {
+                    button.getStyleClass().add("selected");
+                }
             }
-        });
+        }
 
-        hexList.forEach(hex -> hex.setStyle(""));
+        if (!anyAffordable && gameState.getSelectedMinion() != null) {
+            gameState.setSelectedMinion(null);
+
+            for (Button btn : minionButtons) {
+                btn.getStyleClass().remove("selected");
+            }
+        }
+
+        for (Polygon hex : hexList) {
+            hex.setStyle("");
+        }
     }
 
     @FXML
@@ -93,7 +107,7 @@ public class Controller2 {
         Image coinImage = new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/coin-FFB900.png"));
         coinImageView.setImage(coinImage);
 
-        splitPane.getDividers().get(0).positionProperty().addListener((obs, oldVal, newVal) -> {
+        splitPane.getDividers().getFirst().positionProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> splitPane.setDividerPositions(0.25));
         });
 
@@ -210,20 +224,15 @@ public class Controller2 {
 
         button.setOnAction(e -> {
             if (gameState.getSelectedMinion() == minion) {
-                // Deselecteer als dezelfde minion al geselecteerd was
                 gameState.setSelectedMinion(null);
                 button.getStyleClass().remove("selected");
             } else if (gameState.canAffordMinion(minion)) {
-                // Selecteer nieuwe minion
                 gameState.setSelectedMinion(minion);
 
-                // Verwijder selectie van alle buttons
                 minionButtons.forEach(btn -> btn.getStyleClass().remove("selected"));
 
-                // Voeg selectie class toe aan huidige button
                 button.getStyleClass().add("selected");
             }
-            // updateUI wordt automatisch aangeroepen na plaatsing
         });
 
         return button;
@@ -268,9 +277,11 @@ public class Controller2 {
             hex.setFill(Color.LIGHTGRAY);
         }
 
+
         hex.setStroke(Color.BLACK);
-        hex.setStrokeWidth(1.5);
         hex.setUserData(tile);
+
+
         hex.setOnMouseClicked(e -> handleTileClick(tile, hex));
 
         return hex;
