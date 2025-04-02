@@ -15,6 +15,9 @@ public class GameState {
     private int speler2Coins;
     private String speler1Naam;
     private String speler2Naam;
+    private boolean placementPhase = true;
+    private int placementTurns = 0;
+
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins) {
         this.speler1Naam = speler1Naam;
@@ -35,6 +38,11 @@ public class GameState {
 
     public void switchPlayer() {
         isSpeler1AanZet = !isSpeler1AanZet;
+        placementTurns+=1;
+
+        if (placementPhase && placementTurns >= 2) {
+            endPlacementPhase();
+        }
     }
 
     public int getCurrentCoins() {
@@ -84,6 +92,14 @@ public class GameState {
     public boolean shouldShowMinion(Tile tile) {
         return placedMinions.containsKey(tile) &&
                 (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2);
+    }
+
+    public boolean isPlacementPhase() {
+        return placementPhase;
+    }
+
+    public void endPlacementPhase() {
+        placementPhase = false;
     }
 
     public boolean isValidPlacement(Tile tile) {

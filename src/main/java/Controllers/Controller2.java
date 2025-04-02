@@ -87,8 +87,15 @@ public class Controller2 {
             }
         }
 
+        markHomebases();
+
         for (Polygon hex : hexList) {
             hex.setStyle("");
+            HexData data = (HexData) hex.getUserData();
+            if (gameState.isOccupied(data.tile)) {
+                data.overlay.setFill(Color.TRANSPARENT);
+                data.overlay.setOpacity(0);
+            }
         }
     }
 
@@ -104,13 +111,16 @@ public class Controller2 {
     @FXML
     public void initialize() {
 
+        if (!hexList.isEmpty()) {
+            return;
+        }
+
         Image coinImage = new Image(getClass().getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/coin-FFB900.png"));
         coinImageView.setImage(coinImage);
 
         splitPane.getDividers().getFirst().positionProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> splitPane.setDividerPositions(0.25));
         });
-
 
         MinionParser parser = new MinionParser();
         List<Minion> minions = parser.parseMinions();
@@ -119,14 +129,11 @@ public class Controller2 {
             minionsContainer.getChildren().add(minionButton);
         }
 
-
         FieldParser fieldParser = new FieldParser();
         List<Tile> tiles = fieldParser.parseField();
         for (Tile tile : tiles) {
-            Polygon hex = createHexagon(tile);
-            gameBoardContainer.getChildren().add(hex);
+            createHexagon(tile);
         }
-
     }
 
     private Button createMinionButton(Minion minion) {
@@ -239,13 +246,11 @@ public class Controller2 {
     }
 
 
-    public Polygon createHexagon(Tile tile) {
-
+    public void createHexagon(Tile tile) {
         double hexSize = 74.0;
         double n = Math.sqrt(hexSize * hexSize * 0.75);
         double hexWidth = 2 * n;
         double hexHeight = 2 * hexSize;
-
 
         double xCoord = tile.getX() * hexWidth + (tile.getY() % 2) * n;
         double yCoord = tile.getY() * hexHeight * 0.75;
@@ -253,17 +258,14 @@ public class Controller2 {
         xCoord += 80;
         yCoord += 40;
 
-
-        Polygon hex = new Polygon();
-        hexList.add(hex);
-
-        hex.getPoints().addAll(
-                xCoord, yCoord,                         // Punt boven
-                xCoord + n, yCoord + hexSize * 0.5,          // Rechts boven
-                xCoord + n, yCoord + hexSize * 1.5,          // Rechts onder
-                xCoord, yCoord + 2 * hexSize,                // Punt onder
-                xCoord - n, yCoord + hexSize * 1.5,          // Links onder
-                xCoord - n, yCoord + hexSize * 0.5           // Links boven
+        // Main hexagon
+        Polygon hex = new Polygon(
+                xCoord, yCoord,
+                xCoord + n, yCoord + hexSize * 0.5,
+                xCoord + n, yCoord + hexSize * 1.5,
+                xCoord, yCoord + 2 * hexSize,
+                xCoord - n, yCoord + hexSize * 1.5,
+                xCoord - n, yCoord + hexSize * 0.5
         );
 
         try {
@@ -273,23 +275,55 @@ public class Controller2 {
             );
             hex.setFill(imagePattern);
         } catch (Exception e) {
-            System.err.println("Afbeelding niet gevonden voor: " + tile.getType());
             hex.setFill(Color.LIGHTGRAY);
         }
 
-
         hex.setStroke(Color.BLACK);
-        hex.setUserData(tile);
+        hexList.add(hex);
 
+        // Overlay hexagon
+        Polygon overlayHex = new Polygon();
+        overlayHex.getPoints().addAll(
+                xCoord, yCoord,
+                xCoord + n, yCoord + hexSize * 0.5,
+                xCoord + n, yCoord + hexSize * 1.5,
+                xCoord, yCoord + 2 * hexSize,
+                xCoord - n, yCoord + hexSize * 1.5,
+                xCoord - n, yCoord + hexSize * 0.5
+        );
 
-        hex.setOnMouseClicked(e -> handleTileClick(tile, hex));
+        overlayHex.setFill(Color.TRANSPARENT);
+        overlayHex.setOpacity(0);
+        overlayHex.setStroke(Color.TRANSPARENT);
 
-        return hex;
+        // Store references
+        hex.setUserData(new HexData(tile, overlayHex));
+        gameBoardContainer.getChildren().addAll(hex, overlayHex);
+
+        overlayHex.setOnMouseClicked(e -> handleTileClick(hex));
     }
 
-    private void handleTileClick(Tile tile, Polygon hex) {
+
+    private static class HexData {
+        final Tile tile;
+        final Polygon overlay;
+
+        HexData(Tile tile, Polygon overlay) {
+            this.tile = tile;
+            this.overlay = overlay;
+        }
+    }
+
+
+    private void handleTileClick(Polygon hex) {
+        HexData data = (HexData) hex.getUserData();
+        Tile tile = data.tile;
+        Polygon overlayHex = data.overlay;
+
         if (currentlySelectedHex != null) {
-            currentlySelectedHex.getStyleClass().remove("selected-hex");
+            HexData prevData = (HexData) currentlySelectedHex.getUserData();
+            prevData.overlay.setFill(Color.TRANSPARENT);
+            prevData.overlay.setOpacity(0);
         }
 
         if (currentlySelectedHex == hex) {
@@ -303,10 +337,11 @@ public class Controller2 {
                 placeMinion(tile, hex);
             }
         } else if (gameState.isOccupied(tile)) {
-            selectMinion(tile, hex);
+            selectMinion(tile, overlayHex);
             currentlySelectedHex = hex;
         }
     }
+
 
 
     public void placeMinion(Tile tile, Polygon hex) {
@@ -326,9 +361,49 @@ public class Controller2 {
 
     }
 
-    private void selectMinion(Tile tile, Polygon hex) {
+    private void selectMinion(Tile tile, Polygon overlayHex) {
         gameState.setSelectedTile(tile);
-        hex.getStyleClass().add("selected-hex");
+        overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
+        overlayHex.setStyle("-fx-stroke-width: 5;");
+        overlayHex.setOpacity(0.5);
+        overlayHex.setStroke(Color.GREEN);
+    }
+
+    private void markHomebases() {
+        if (!gameState.isPlacementPhase()) {
+            resetAllOverlays();
+            return;
+        }
+
+        for (Polygon hex : hexList) {
+            HexData data = (HexData) hex.getUserData();
+            Tile tile = data.tile;
+            Polygon overlayHex = data.overlay;
+
+            // Standaard
+            Color color = Color.RED;
+
+            // homebase tiles geel
+            if (gameState.isSpeler1AanZet() && tile.getHomebase() == 1) {
+                color = Color.YELLOW;
+            } else if (!gameState.isSpeler1AanZet() && tile.getHomebase() == 2) {
+                color = Color.YELLOW;
+            }
+
+            overlayHex.setFill(color);
+            overlayHex.setStroke(Color.BLACK);
+            overlayHex.setOpacity(0.4);
+        }
+    }
+
+    private void resetAllOverlays() {
+        for (Polygon hex : hexList) {
+            HexData data = (HexData) hex.getUserData();
+            Polygon overlayHex = data.overlay;
+            overlayHex.setFill(Color.TRANSPARENT);
+            overlayHex.setOpacity(0);
+            overlayHex.setStroke(Color.TRANSPARENT);
+        }
     }
 
 

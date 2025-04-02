@@ -82,3 +82,9 @@
     -fx-stroke: gold;
     -fx-stroke-width: 5;
 }
+
+.hexagon {
+    -fx-stroke: black;
+    -fx-stroke-width: 1.5;
+    -fx-effect: null;
+}
