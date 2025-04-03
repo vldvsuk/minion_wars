@@ -335,7 +335,6 @@ public class Controller2 {
         }
 
         if (currentlySelectedHex == hex) {
-            // Deselecteren
             currentlySelectedHex = null;
             gameState.setSelectedTile(null);
             return;
