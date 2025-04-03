@@ -108,7 +108,6 @@ public class Controller2 {
     }
 
     private void updateUI() {
-        // Update labels en buttons
         naamLabel.setText(gameState.getCurrentPlayerName());
         coinsLabel.setText(String.valueOf(gameState.getCurrentCoins()));
         updateButtonStates();
@@ -288,7 +287,7 @@ public class Controller2 {
         hex.setStrokeWidth(1.5);
         hexList.add(hex);
 
-        // Overlay hexagon
+        // Overlay
         Polygon overlayHex = new Polygon();
         overlayHex.getPoints().addAll(
                 xCoord, yCoord,
@@ -305,7 +304,6 @@ public class Controller2 {
         overlayHex.setOpacity(0);
         overlayHex.setStroke(Color.TRANSPARENT);
 
-        // Store references
         hex.setUserData(new HexData(tile, overlayHex));
         gameBoardContainer.getChildren().addAll(hex, overlayHex);
 
