@@ -366,7 +366,7 @@ public class Controller2 {
             );
             hex.setFill(minionImage);
         } catch (Exception e) {
-            hex.setFill(Color.RED); // Foutkleur
+            hex.setFill(Color.RED);
         }
 
         gameState.placeMinion(tile, gameState.getSelectedMinion());
