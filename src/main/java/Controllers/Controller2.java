@@ -373,6 +373,9 @@ public class Controller2 {
         }
 
         gameState.placeMinion(tile, gameState.getSelectedMinion());
+
+        currentlySelectedHex = null;
+
         updateUI();
 
     }
@@ -381,8 +384,7 @@ public class Controller2 {
         if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
             gameState.setSelectedTile(tile);
             overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
-            overlayHex.setStyle("-fx-stroke-width: 5;");
-            overlayHex.setOpacity(0.5);
+            overlayHex.setOpacity(0.7);
             overlayHex.setStroke(Color.GREEN);
         }
     }
@@ -418,6 +420,7 @@ public class Controller2 {
                         gameState.isMinionOwnedByCurrentPlayer(tile)) {
                     overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
                     overlayHex.setOpacity(0.5);
+
                 }
             }
         }
@@ -457,9 +460,7 @@ public class Controller2 {
                             new Image(getClass().getResourceAsStream(imagePath))
                     );
                     hex.setFill(original);
-                    hex.setStroke(Color.BLACK);
-                    hex.setStrokeWidth(1.5);
-                    hex.setStyle("");
+
 
                     // Reset overlay
                     data.overlay.setFill(Color.TRANSPARENT);
