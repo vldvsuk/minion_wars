@@ -85,7 +85,6 @@ public class FXController {
             stage.setScene(nieuweScene);
 
             Controller2 controller2 = fxmlLoader.getController();
-            controller2.setStage(stage);
             controller2.setInfo(naamSpeler1, naamSpeler2, Integer.parseInt(muntenText));
             stage.centerOnScreen();
             stage.setResizable(true);

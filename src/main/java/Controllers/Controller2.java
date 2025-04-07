@@ -28,7 +28,6 @@ import java.util.List;
 import grond.Tile;
 
 public class Controller2 {
-    private Stage stage;
     private GameState gameState;
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
@@ -98,9 +97,6 @@ public class Controller2 {
         markHomebases();
     }
 
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
 
     public void setInfo(String speler1, String speler2, int munten) {
         this.gameState = new GameState(speler1, speler2, munten);
