@@ -2,8 +2,8 @@ package models.powers;
 
 public class Fireball extends Power {
 
-    private String effect;
-    private int effectValue;
+    private final String effect;
+    private final int effectValue;
 
     public Fireball(int radius, int value, String effect, int effectValue) {
         super("fireball", radius, value);

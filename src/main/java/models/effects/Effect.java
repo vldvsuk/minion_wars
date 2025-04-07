@@ -1,9 +1,9 @@
 package models.effects;
 
 public class Effect {
-    private String type;
-    private int duration;
-    private int value;
+    private final String type;
+    private final int duration;
+    private final int value;
 
     public Effect(String type, int duration, int value) {
         this.type = type;

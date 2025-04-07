@@ -1,8 +1,8 @@
 package models.powers;
 
 public class Lightning extends Power {
-    private String effect;
-    private int effectValue;
+    private final String effect;
+    private final int effectValue;
 
     public Lightning(int radius, int value, String effect, int effectValue) {
         super("lightning", radius, value);

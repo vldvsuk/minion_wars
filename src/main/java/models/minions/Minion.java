@@ -2,13 +2,13 @@ package models.minions;
 
 
 public class Minion {
-    private String type;
-    private String name;
-    private int cost;
-    private int movement;
-    private String range;
-    private int attack;
-    private int defence;
+    private final String type;
+    private final String name;
+    private final int cost;
+    private final int movement;
+    private final String range;
+    private final int attack;
+    private final int defence;
 
     // Constructor voor alle minions
     public Minion(String type, String name, int cost, int movement, String range, int attack, int defence) {

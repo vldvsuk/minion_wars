@@ -17,8 +17,8 @@ public class HexagonFactory {
         double xCoord = tile.getX() * hexWidth + (tile.getY() % 2) * n + 80;
         double yCoord = tile.getY() * hexHeight * 0.75 + 40;
 
-        Polygon hex = createHexagonShape(xCoord, yCoord, n, HEX_SIZE);
-        Polygon overlay = createHexagonShape(xCoord, yCoord, n, HEX_SIZE);
+        Polygon hex = createHexagonShape(xCoord, yCoord, n);
+        Polygon overlay = createHexagonShape(xCoord, yCoord, n);
 
         setupHexagonAppearance(hex, tile);
         setupOverlayAppearance(overlay);
@@ -26,14 +26,14 @@ public class HexagonFactory {
         return new HexagonData(hex, overlay, tile);
     }
 
-    private Polygon createHexagonShape(double x, double y, double n, double size) {
+    private Polygon createHexagonShape(double x, double y, double n) {
         return new Polygon(
                 x, y,
-                x + n, y + size * 0.5,
-                x + n, y + size * 1.5,
-                x, y + 2 * size,
-                x - n, y + size * 1.5,
-                x - n, y + size * 0.5
+                x + n, y + HEX_SIZE * 0.5,
+                x + n, y + HEX_SIZE * 1.5,
+                x, y + 2 * HEX_SIZE,
+                x - n, y + HEX_SIZE * 1.5,
+                x - n, y + HEX_SIZE * 0.5
         );
     }
 

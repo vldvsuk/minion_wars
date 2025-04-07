@@ -9,15 +9,15 @@ import java.util.Map;
 
 
 public class GameState {
-    private Map<Tile, Minion> speler1Minions = new HashMap<>();
-    private Map<Tile, Minion> speler2Minions = new HashMap<>();
+    private final Map<Tile, Minion> speler1Minions = new HashMap<>();
+    private final Map<Tile, Minion> speler2Minions = new HashMap<>();
     private Minion selectedMinion;
     private Tile selectedTile;
     private boolean isSpeler1AanZet = true;
     private int speler1Coins;
     private int speler2Coins;
-    private String speler1Naam;
-    private String speler2Naam;
+    private final String speler1Naam;
+    private final String speler2Naam;
     private boolean placementPhase = true;
     private int placementTurns = 0;
 
@@ -32,11 +32,6 @@ public class GameState {
 
     public boolean isSpeler1AanZet() {
         return isSpeler1AanZet;
-    }
-
-    public void setStartCoins(int coins) {
-        this.speler1Coins = coins;
-        this.speler2Coins = coins;
     }
 
     public void switchPlayer() {
@@ -104,15 +99,6 @@ public class GameState {
             return speler2Minions.get(tile);
         }
     }
-
-    public boolean shouldShowMinion(Tile tile) {
-        if (isSpeler1AanZet) {
-            return speler1Minions.containsKey(tile);
-        } else {
-            return speler2Minions.containsKey(tile);
-        }
-    }
-
 
     public boolean isPlacementPhase() {
         return placementPhase;
