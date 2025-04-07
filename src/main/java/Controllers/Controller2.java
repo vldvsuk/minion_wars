@@ -242,7 +242,7 @@ public class Controller2 {
             if (gameState.isPlacementPhase()) {
                 if (gameState.isOccupied(tile)) {
                     if (!gameState.isMinionOwnedByCurrentPlayer(tile)) {
-                        overlayHex.setFill(gameState.isSpeler1AanZet() ? Color.RED : Color.RED);
+                        overlayHex.setFill(Color.RED);
                         overlayHex.setOpacity(0.4);
                     }
                 } else {
@@ -359,8 +359,8 @@ public class Controller2 {
     }
 
     private void removeMinionButtons() {
-        minionsContainer.getChildren().clear();  // Verwijder alle children uit de VBox
-        minionButtons.clear();                   // Maak de lijst met buttons leeg
-        gameState.setSelectedMinion(null);       // Reset de geselecteerde minion
+        minionsContainer.getChildren().clear();
+        minionButtons.clear();
+        gameState.setSelectedMinion(null);
     }
 }

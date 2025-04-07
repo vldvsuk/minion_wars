@@ -1,9 +1,9 @@
 package models.powers;
 
 public class Power {
-    private String type;
-    private int radius;
-    private int value;
+    private final String type;
+    private final int radius;
+    private final int value;
 
     public Power(String type, int radius, int value) {
         this.type = type;
