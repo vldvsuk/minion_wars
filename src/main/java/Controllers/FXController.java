@@ -7,11 +7,8 @@ import javafx.scene.control.TextField;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import models.Minion;
-import parsers.MinionParser;
 
 import java.io.IOException;
-import java.util.List;
 
 public class FXController {
     @FXML
