@@ -9,6 +9,7 @@ public class Minion {
     private final String range;
     private final int attack;
     private final int defence;
+    private int currentDefence;
 
     // Constructor voor alle minions
     public Minion(String type, String name, int cost, int movement, String range, int attack, int defence) {
@@ -19,6 +20,7 @@ public class Minion {
         this.range = range;
         this.attack = attack;
         this.defence = defence;
+        this.currentDefence = defence;
     }
 
     // Getters
@@ -48,6 +50,10 @@ public class Minion {
 
     public int getDefence() {
         return defence;
+    }
+
+    public int getCurrentDefence() {
+        return currentDefence;
     }
 
     @Override

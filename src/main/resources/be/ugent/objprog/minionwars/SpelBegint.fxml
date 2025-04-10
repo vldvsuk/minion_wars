@@ -27,7 +27,7 @@
                                             </font>
                                         </Label>
 
-                                        <HBox alignment="CENTER" spacing="3.0" HBox.hgrow="NEVER">
+                                        <HBox fx:id="coinsHBox" alignment="CENTER" spacing="3.0" HBox.hgrow="NEVER">
                                             <children>
                                                 <ImageView fx:id="coinImageView" fitHeight="26.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" />
                                                 <Label fx:id="coinsLabel" alignment="CENTER" text="0" textFill="#ffb429">

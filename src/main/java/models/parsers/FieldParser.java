@@ -1,4 +1,4 @@
-package parsers;
+package models.parsers;
 
 import models.grond.*;
 import org.jdom2.Document;

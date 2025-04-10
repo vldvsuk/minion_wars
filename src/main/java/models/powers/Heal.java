@@ -1,7 +1,7 @@
 package models.powers;
 
 public class Heal extends Power {
-    public Heal(int radius, int value) {
-        super("heal", radius, value);
+    public Heal(String type, String name, int radius, int value) {
+        super("healing", name, radius, value);
     }
 }

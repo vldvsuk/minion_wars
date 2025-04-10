@@ -1,25 +1,30 @@
 package Controllers;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitPane;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import models.GameState;
 import models.minions.Minion;
-import parsers.FieldParser;
-import parsers.MinionParser;
+import models.parsers.FieldParser;
+import models.parsers.MinionParser;
 import java.util.ArrayList;
 import java.util.List;
 import models.grond.Tile;
+import models.parsers.PowerParser;
+import models.powers.Power;
 import view.button.MinionButtonFactory;
 import view.hexagon.HexagonData;
 import view.hexagon.HexagonFactory;
@@ -35,13 +40,20 @@ public class Controller2 {
 
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
+    private final List<Button> powersButtons = new ArrayList<>();
     private Polygon currentlySelectedHex = null;
 
+
+    private VBox labelBox;
+    private VBox tabBox;
     @FXML private SplitPane splitPane;
     @FXML private Label naamLabel;
     @FXML private Label coinsLabel;
     @FXML private ImageView coinImageView;
     @FXML private VBox minionsContainer;
+    @FXML private HBox coinsHBox;
+    @FXML private Label minionCountLabel;
+    @FXML private Button beurtButton;
     @FXML private AnchorPane gameBoardContainer;
     @FXML private ScrollPane gameScrollPane;
 
@@ -136,8 +148,8 @@ public class Controller2 {
         uiManager.updateUI();
 
 
-        if (!gameState.isPlacementPhase() && !minionButtons.isEmpty()) {
-            removeMinionButtons();
+        if (!gameState.isPlacementPhase()) {
+            naPlacemet();
         }else{
             updateButtonStates();
         }
@@ -224,6 +236,11 @@ public class Controller2 {
             overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
             overlayHex.setOpacity(0.7);
             overlayHex.setStroke(Color.GREEN);
+            if (!gameState.isPlacementPhase()) {
+                labelBox.getChildren().clear();
+                HBox nieuweHBox = generateMinionInfo(tile);
+                labelBox.getChildren().add(0, nieuweHBox);
+            }
         }
     }
 
@@ -311,7 +328,6 @@ public class Controller2 {
             if (gameState.isOccupied(tile)) {
                 if (gameState.isPlacementPhase()) {
                     boolean showMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
-
                     if (showMinion) {
                         Minion minion = gameState.getPlacedMinion(tile);
                         try {
@@ -323,7 +339,7 @@ public class Controller2 {
                         resetTileToOriginal(hex, tile);
                     }
                 } else {
-                    // Show all minions after placement phase
+                    // Show all minions na placement
                     Minion minion = gameState.getPlacedMinion(tile);
                     try {
                         hex.setFill(ImagePatternHelper.createMinionPattern(minion.getType()));
@@ -358,9 +374,340 @@ public class Controller2 {
         }
     }
 
+    private void naPlacemet(){
+        removeMinionButtons();
+        addCustomVBox();
+        replaceCoinsDisplay();
+        setupActionButtons();
+    }
+
     private void removeMinionButtons() {
-        minionsContainer.getChildren().clear();
+        minionsContainer.getChildren();
         minionButtons.clear();
         gameState.setSelectedMinion(null);
+    }
+
+    private void addCustomVBox() {
+        minionsContainer.getChildren().clear();
+
+        VBox topVBox = new VBox(10);
+        topVBox.setId("topVBox");
+        topVBox.setPrefWidth(180);
+        topVBox.setAlignment(Pos.TOP_CENTER);
+
+
+        // LABEL BOX
+        labelBox = new VBox();
+        labelBox.setAlignment(Pos.CENTER);
+        Label label = new Label("Kies een minion!");
+        label.setFont(Font.font("System", FontWeight.BOLD, 24));
+        labelBox.setMinHeight(100);
+        labelBox.getChildren().add(label);
+
+        tabBox = new VBox();
+        tabBox.setAlignment(Pos.BOTTOM_CENTER);
+        tabBox.setPrefHeight(300);
+        tabBox.setPrefWidth(180);
+
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabPane.setMinHeight(600);
+        tabPane.setPrefWidth(180);
+
+        // Tab 1: Bewegen
+        Tab bewegenTab = new Tab("Bewegen");
+        VBox bewegenContent = new VBox(15);
+        bewegenContent.setAlignment(Pos.CENTER);
+        bewegenContent.setPrefWidth(170);
+
+        Label bewegenLabel = new Label("Selecteer een groen veld op het spelbord of kies om te blijven staan");
+        bewegenLabel.setTextAlignment(TextAlignment.CENTER);
+        bewegenLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
+        bewegenLabel.setWrapText(true);
+        bewegenLabel.setMaxWidth(160);
+
+        Button blijvenStaanButton = new Button("Blijven staan");
+        blijvenStaanButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+        blijvenStaanButton.setOnAction(e -> System.out.println("Blijven staan geklikt!"));
+
+        bewegenContent.getChildren().addAll(bewegenLabel, blijvenStaanButton);
+        bewegenTab.setContent(bewegenContent);
+
+        // Tab 2: Aanvallen
+        Tab aanvallenTab = new Tab("Aanvallen");
+        VBox aanvallenContent = new VBox(10);
+        aanvallenContent.setAlignment(Pos.CENTER);
+        aanvallenContent.setPrefWidth(170);
+
+        Label aanvallenLabel = new Label("Selecteer een aanval uit de lijst en klik op een vijandelijke minion");
+        aanvallenLabel.setTextAlignment(TextAlignment.CENTER);
+        aanvallenLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
+        aanvallenLabel.setWrapText(true);
+        aanvallenLabel.setMaxWidth(160);
+
+        Button basisAanvalButton = new Button("Basis aanval");
+        basisAanvalButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+
+        Button specialeAanvalButton = new Button("Speciale aanval");
+        specialeAanvalButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+
+        Label ofLabel = new Label("of");
+        ofLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
+
+        Button geneesButton = new Button("Genees minion (+2hp)");
+        geneesButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+
+        aanvallenContent.getChildren().addAll(
+                aanvallenLabel,
+                basisAanvalButton,
+                specialeAanvalButton,
+                ofLabel,
+                geneesButton
+        );
+        aanvallenTab.setContent(new StackPane(aanvallenContent));
+
+        // Tab 3: Bonus
+        Tab bonusTab = new Tab("Bonus");
+        VBox bonusContent = new VBox(10);
+        bonusContent.setPrefWidth(170);
+
+// Parse powers en maak buttons
+        PowerParser powerParser = new PowerParser();
+        List<Power> powers = powerParser.parsePowers();
+
+        for (Power power : powers) {
+            Button powerButton = new Button();
+            powerButton.getStyleClass().add("minion-button");
+            powerButton.setMaxWidth(Double.MAX_VALUE);
+            powerButton.setMinHeight(100);
+            powerButton.setPrefHeight(75);
+            powerButton.setUserData(power);
+
+
+            // Main content HBox
+            HBox content = new HBox(15);
+            content.setAlignment(Pos.CENTER_LEFT);
+
+            // 1. Power afbeelding (eerste element van hoofd-HBox)
+            ImageView powerImage = new ImageView();
+            try {
+                powerImage.setImage(ImageLoader.loadPowerImage(power.getType()));
+            } catch (Exception e) {
+                powerImage.setImage(ImageLoader.loadFallbackMinionImage());
+            }
+            powerImage.setFitHeight(100);
+            powerImage.setFitWidth(100);
+            powerImage.setPreserveRatio(true);
+            Circle clip = new Circle(50, 50, 40);
+            powerImage.setClip(clip);
+
+            // 2. HBox (detailsContainer) - tweede element van hoofd-HBox
+            HBox detailsContainer = new HBox(70);
+            detailsContainer.setAlignment(Pos.CENTER_LEFT);
+
+            // 2a. Eerste element van detailsContainer: VBox met naam en effect
+            VBox textDetails = new VBox(5);
+            textDetails.setAlignment(Pos.CENTER_LEFT);
+
+            // Naam (bold)
+            Label nameLabel = new Label(power.getName());
+
+            nameLabel.setFont(Font.font("System", FontWeight.BOLD, 23));
+            nameLabel.setPrefWidth(150);
+            nameLabel.setAlignment(Pos.CENTER_LEFT);
+
+            // Effect (niet bold)
+            Label effectLabel = new Label();
+            switch (power.getType().toLowerCase()) {
+                case "fireball" -> effectLabel.setText("Effect: branden");
+                case "lightning" -> effectLabel.setText("Effect: verlaming");
+                case "healing" -> effectLabel.setText("Effect: genezing");
+                default -> effectLabel.setText("Effect: ");
+            }
+            effectLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
+
+            textDetails.getChildren().addAll(nameLabel, effectLabel);
+
+            // Stats container
+            VBox statsContainer = new VBox(5);
+            statsContainer.setAlignment(Pos.CENTER);
+
+            // Value icon conditioneel instellen
+            Image valueIcon = switch (power.getType().toLowerCase()) {
+                case "healing" -> ImageLoader.loadHealthIcon();
+                default -> ImageLoader.loadAttackIcon();
+            };
+
+            HBox valueBox = createStatBox(
+                    valueIcon,
+                    String.valueOf(power.getValue()),
+                    "value-stat"
+            );
+
+            HBox radiusBox = createStatBox(
+                    ImageLoader.loadRangeIcon(),
+                    String.valueOf(power.getRadius()),
+                    "radius-stat"
+            );
+
+            HBox durationBox = createStatBox(
+                    ImageLoader.loadDurationIcon(),
+                    "1",
+                    "duration-stat"
+            );
+
+            // Conditionele toevoeging van stats
+            statsContainer.getChildren().add(valueBox);
+            if (!power.getType().equalsIgnoreCase("lightning")) {
+                statsContainer.getChildren().add(radiusBox);
+            }
+            if (!power.getType().equalsIgnoreCase("healing")) {
+                statsContainer.getChildren().add(durationBox);
+            }
+
+            detailsContainer.getChildren().addAll(textDetails, statsContainer);
+            content.getChildren().addAll(powerImage, detailsContainer);
+            powerButton.setGraphic(content);
+            powerButton.setOnAction(e -> System.out.println("de button is" + power.getType()));
+            bonusContent.getChildren().add(powerButton);
+        }
+
+        bonusTab.setContent(bonusContent);
+        tabPane.getTabs().addAll(bewegenTab, aanvallenTab, bonusTab);
+        tabBox.getChildren().add(tabPane);
+        topVBox.getChildren().addAll(labelBox, tabBox);
+        minionsContainer.getChildren().add(0, topVBox);
+    }
+
+
+    private void replaceCoinsDisplay() {
+
+        ImageView minionIcon = new ImageView(ImageLoader.loadUseMinionIcon());
+        minionIcon.setFitHeight(26);
+        minionIcon.setFitWidth(24);
+        minionIcon.setPreserveRatio(true);
+
+        minionCountLabel = new Label("0/2");
+        minionCountLabel.setTextFill(Color.BLUE);
+        minionCountLabel.setFont(Font.font("System Bold Italic", 24));
+
+        coinsHBox.getChildren().clear();
+        coinsHBox.getChildren().addAll(minionIcon, minionCountLabel);
+
+
+    }
+    private HBox createStatBox(Image icon, String value, String styleClass) {
+        HBox box = new HBox(5);
+        ImageView iconView = new ImageView(icon);
+        iconView.setFitHeight(20);
+        iconView.setFitWidth(20);
+        iconView.setPreserveRatio(true);
+
+        Label label = new Label(value);
+        label.getStyleClass().add(styleClass);
+
+        box.getChildren().addAll(iconView, label);
+        return box;
+    }
+
+    private HBox generateMinionInfo(Tile selectedTile) {
+
+        Minion selectedMinion = gameState.getPlacedMinion(selectedTile);
+        HBox hbox1 = new HBox(10);
+
+        hbox1.setAlignment(Pos.CENTER_LEFT);
+
+
+        // Minion afbeelding
+        ImageView imageView = new ImageView();
+        try {
+            Image image = ImageLoader.loadMinionImage(selectedMinion.getType());
+            imageView.setImage(image);
+            imageView.setFitHeight(100);
+            imageView.setFitWidth(100);
+            imageView.setPreserveRatio(true);
+            Circle clip = new Circle(50, 50, 40);
+            imageView.setClip(clip);
+        } catch (Exception e) {
+            imageView.setImage(ImageLoader.loadFallbackMinionImage());
+        }
+
+        // VBox voor naam, stats en ondergrond
+        VBox contentVBox = new VBox(5);
+        contentVBox.setAlignment(Pos.CENTER);
+
+        // HBox voor naam en stats
+        HBox nameAndStats = new HBox(20);
+        nameAndStats.setAlignment(Pos.CENTER_LEFT);
+
+        HBox stats = new HBox(7);
+        stats.setAlignment(Pos.CENTER_LEFT);
+
+
+        HBox nameBox = new HBox();
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+        nameBox.setPrefWidth(150);
+
+
+        // Naam label
+        Label nameLabel = new Label(selectedMinion.getName());
+        nameLabel.setFont(Font.font("System", FontWeight.BOLD, 23));
+
+        nameBox.getChildren().addAll(nameLabel);
+
+        // Attack en defense stats
+        HBox attackBox = createStatBox(
+                ImageLoader.loadAttackIcon(),
+                String.valueOf(selectedMinion.getAttack()),
+                "attack-stat"
+        );
+
+        String health = String.valueOf(selectedMinion.getCurrentDefence()) + "/" + String.valueOf(selectedMinion.getDefence());
+
+        HBox defenseBox = createStatBox(
+                ImageLoader.loadDefenseIcon(),
+                health,
+                "defence-stat"
+        );
+
+        stats.getChildren().addAll(attackBox, defenseBox);
+        nameAndStats.getChildren().addAll(nameBox, stats);
+
+        HBox tilesBox = new HBox(5);
+        tilesBox.setAlignment(Pos.CENTER_LEFT);
+
+        Label tileLabel = new Label("Ondergrond: " + selectedTile.getType());
+        tileLabel.setFont(Font.font("System",FontWeight.BOLD, 23));
+        tilesBox.getChildren().add(tileLabel);
+
+
+        contentVBox.getChildren().addAll(nameAndStats, tilesBox);
+        hbox1.getChildren().addAll(imageView, contentVBox);
+
+        return hbox1;
+    }
+
+    private void setupActionButtons() {
+        // Verwijder bestaande button uit FXML
+        HBox buttonContainer = (HBox) beurtButton.getParent();
+        buttonContainer.getChildren().clear();
+
+        // Maak beide buttons met gelijke grootte
+        beurtButton.setPrefHeight(35);
+
+        Button rustButton = new Button("Rust");
+        rustButton.setPrefWidth(80);
+        rustButton.setPrefHeight(35);
+        rustButton.setFont(Font.font("System", FontWeight.BOLD, 15));
+        rustButton.setOnAction(e -> handleRustButton());
+
+        // Voeg toe aan container
+        buttonContainer.getChildren().addAll(rustButton, beurtButton);
+        buttonContainer.setSpacing(5);
+    }
+
+    private void handleRustButton() {
+        System.out.println("Rust geklikt!");
+        // Voeg hier je rust-functionaliteit toe
     }
 }

@@ -1,8 +1,6 @@
 package models;
-
 import models.grond.Tile;
 import models.minions.Minion;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,11 +107,15 @@ public class GameState {
     }
 
     public boolean isValidPlacement(Tile tile) {
-        return !isOccupied(tile) &&
-                List.of("dirt", "forest", "mountains").contains(tile.getType()) &&
-                (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2) &&
-                getSelectedMinion().getCost() <= getCurrentCoins();
+        if (isOccupied(tile)) return false;
+        if (!List.of("dirt", "forest", "mountains").contains(tile.getType())) return false;
+        if (getSelectedMinion().getCost() > getCurrentCoins()) return false;
 
+        if (isPlacementPhase()) {
+            return (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2);
+        }
+
+        return true;
     }
     public void refundCoins(int amount) {
         if (isSpeler1AanZet) {

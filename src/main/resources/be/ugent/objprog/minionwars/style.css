@@ -88,3 +88,21 @@
     -fx-stroke-width: 1.5;
     -fx-effect: null;
 }
+
+.value-stat {
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+    -fx-text-fill: #D60000;
+}
+
+.radius-stat{
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+    -fx-text-fill: Green;
+}
+
+.duration-stat{
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+    -fx-text-fill: blue;
+}

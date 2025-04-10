@@ -5,8 +5,8 @@ public class Fireball extends Power {
     private final String effect;
     private final int effectValue;
 
-    public Fireball(int radius, int value, String effect, int effectValue) {
-        super("fireball", radius, value);
+    public Fireball(String type, String name, int radius, int value, String effect, int effectValue) {
+        super(type, name, radius, value);
         this.effect = effect;
         this.effectValue = effectValue;
     }

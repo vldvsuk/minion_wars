@@ -2,6 +2,8 @@ package view.images;
 
 import javafx.scene.image.Image;
 
+import java.io.InputStream;
+
 public class ImageLoader {
     public static Image loadMinionImage(String type) {
         return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/minions/" + type + ".png"));}
@@ -23,5 +25,23 @@ public class ImageLoader {
 
     public static Image loadDefenseIcon() {
         return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/health-D60000.png"));
+    }
+
+    public static Image loadUseMinionIcon() {
+        return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/minions-0073FF.png"));
+    }
+
+    public static Image loadPowerImage(String type){
+        return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/powers/" + type + ".png"));
+    }
+
+    public static Image loadRangeIcon() {
+        return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/range-119533.png"));
+    }
+    public static Image loadDurationIcon(){
+        return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/duration-0073FF.png"));
+    }
+    public static Image loadHealthIcon(){
+        return new Image(ImageLoader.class.getResourceAsStream("/be/ugent/objprog/minionwars/images/icons/heal-D60000.png"));
     }
 }

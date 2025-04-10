@@ -1,4 +1,4 @@
-package parsers;
+package models.parsers;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -32,12 +32,13 @@ public class PowerParser {
 
             for (Element powerElement : powerElements) {
                 String type = powerElement.getName();
+                String name = powerElement.getAttributeValue("name");
                 int radius = Integer.parseInt(powerElement.getAttributeValue("radius"));
                 int value = Integer.parseInt(powerElement.getAttributeValue("value"));
                 String effect = powerElement.getAttributeValue("effect", "none");
                 int effectValue = Integer.parseInt(powerElement.getAttributeValue("effect-value", "0"));
 
-                Power power = createPower(type, radius, value, effect, effectValue);
+                Power power = createPower(type, name, radius, value, effect, effectValue);
                 powers.add(power);
             }
 
@@ -49,11 +50,11 @@ public class PowerParser {
 
     }
 
-    public static Power createPower(String type, int radius, int value, String effect, int effectValue) {
+    public static Power createPower(String type, String name, int radius, int value, String effect, int effectValue) {
         return switch (type.toLowerCase()) {
-            case "fireball" -> new Fireball(radius, value, effect, effectValue);
-            case "lightning" -> new Lightning(radius, value, effect, effectValue);
-            case "heal" -> new Heal(radius, value);
+            case "fireball" -> new Fireball(type, name, radius, value, effect, effectValue);
+            case "lightning" -> new Lightning(type, name, radius, value, effect, effectValue);
+            case "heal" -> new Heal(type, name, radius, value);
             default -> throw new IllegalArgumentException("Onbekend power-type: " + type);
         };
     }

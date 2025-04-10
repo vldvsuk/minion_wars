@@ -4,8 +4,8 @@ public class Lightning extends Power {
     private final String effect;
     private final int effectValue;
 
-    public Lightning(int radius, int value, String effect, int effectValue) {
-        super("lightning", radius, value);
+    public Lightning(String type, String name, int radius, int value, String effect, int effectValue) {
+        super(type,name, radius, value);
         this.effect = effect;
         this.effectValue = effectValue;
     }
