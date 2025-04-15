@@ -17,9 +17,4 @@ public class Cavalry extends Minion {
     public int getEffectValue() {
         return effectValue;
     }
-
-    @Override
-    public String toString() {
-        return super.toString() + ", effect='" + effect + '\'' + ", effectValue=" + effectValue + '}';
-    }
 }

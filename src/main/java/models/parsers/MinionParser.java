@@ -55,7 +55,7 @@ public class MinionParser {
         return switch (type.toLowerCase()) {
             case "militia" -> new Militia(type, name, cost, movement, range, attack, defence);
             case "spear" -> new Spear(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "sword" -> new Archer.Sword(type, name, cost, movement, range, attack, defence);
+            case "sword" -> new Sword(type, name, cost, movement, range, attack, defence);
             case "axe" -> new Axe(type, name, cost, movement, range, attack, defence);
             case "archer" -> new Archer(type, name, cost, movement, range, attack, defence);
             case "scout" -> new Scout(type, name, cost, movement, range, attack, defence, effect, effectValue);

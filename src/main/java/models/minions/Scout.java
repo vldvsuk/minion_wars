@@ -21,8 +21,4 @@ public class Scout extends Minion {
         return effectValue;
     }
 
-    @Override
-    public String toString() {
-        return super.toString() + ", effect='" + effect + '\'' + ", effectValue=" + effectValue + '}';
-    }
 }

@@ -56,15 +56,8 @@ public class Minion {
         return currentDefence;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{" +
-                "name='" + name + '\'' +
-                ", cost=" + cost +
-                ", movement=" + movement +
-                ", range='" + range + '\'' +
-                ", attack=" + attack +
-                ", defence=" + defence +
-                '}';
+    public void verminderCurrentDefence(int getal) {
+        currentDefence = currentDefence - getal;
+
     }
 }

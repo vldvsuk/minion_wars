@@ -133,4 +133,10 @@ public class GameState {
         }
     }
 
+    public String getWinnaar() {
+        if (speler1Minions.isEmpty()) return speler2Naam;
+        if (speler2Minions.isEmpty()) return speler1Naam;
+        return null;
+    }
+
 }
