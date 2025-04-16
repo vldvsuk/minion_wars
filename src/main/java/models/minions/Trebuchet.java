@@ -18,5 +18,18 @@ public class Trebuchet extends Minion {
     public int getEffectValue() {
         return effectValue;
     }
-
+    @Override
+    public Minion copy() {
+        return new Trebuchet(
+                this.getType(),
+                this.getName(),
+                this.getCost(),
+                this.getMovement(),
+                this.getRange(),
+                this.getAttack(),
+                this.getDefence(),
+                this.effect,
+                this.effectValue
+        );
+    }
 }

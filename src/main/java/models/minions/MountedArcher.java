@@ -17,5 +17,18 @@ public class MountedArcher extends Minion {
     public int getEffectValue() {
         return effectValue;
     }
-
+    @Override
+    public Minion copy() {
+        return new MountedArcher(
+                this.getType(),
+                this.getName(),
+                this.getCost(),
+                this.getMovement(),
+                this.getRange(),
+                this.getAttack(),
+                this.getDefence(),
+                this.effect,
+                this.effectValue
+        );
+    }
 }

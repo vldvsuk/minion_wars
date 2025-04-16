@@ -53,6 +53,9 @@ public class Controller2 {
     private Polygon currentlySelectedHex = null;
     private boolean hasMoved = false;
 
+    private int minionsProcessedThisTurn = 0;
+    private final Set<Minion> processedMinions = new HashSet<>();
+
     private VBox labelBox;
     private VBox tabBox;
     @FXML private SplitPane splitPane;
@@ -131,6 +134,10 @@ public class Controller2 {
         resetAllOverlays();
         markHomebases();
         currentTab = "Bewegen";
+        if (!gameState.isPlacementPhase()){
+            beurtButton.setDisable(true);
+            updateMinionCountLabel();
+        }
     }
 
     private void resetAllOverlays() {
@@ -204,6 +211,12 @@ public class Controller2 {
         Tile tile = data.getTile();
         Polygon overlayHex = data.getOverlay();
 
+
+        Minion minion = gameState.getPlacedMinion(tile);
+        if (minion != null && processedMinions.contains(minion)) {
+            return;
+        }
+
         if (!gameState.isPlacementPhase()) {
             // Handle movement
             if ("Bewegen".equals(currentTab)
@@ -219,7 +232,6 @@ public class Controller2 {
                     && gameState.isOccupied(tile)
                     && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
 
-                System.out.println("Aanval gestart op tile: " + tile.getX() + "," + tile.getY());
 
                 Minion attacker = gameState.getPlacedMinion(gameState.getSelectedTile());
                 Minion defender = gameState.getPlacedMinion(tile);
@@ -227,12 +239,12 @@ public class Controller2 {
                 if (attacker != null && defender != null) {
                     defender.verminderCurrentDefence(attacker.getAttack());
 
-                    System.out.println("Aanvaller: " + attacker.getName() + " (HP: " + attacker.getCurrentDefence() + ")");
-                    System.out.println("Verdediger: " + defender.getName() + " (HP: " + defender.getCurrentDefence() + ")");
 
                     if (defender.getCurrentDefence() <= 0) {
                         gameState.removeMinion(tile);
                         resetTileVisual(tile);
+                        checkVoorSpelEinde();
+
                     }
 
                     resetAllOverlays();
@@ -274,14 +286,17 @@ public class Controller2 {
     }
 
     private void placeMinion(Tile tile, Polygon hex) {
-        gameState.deductCoins(gameState.getSelectedMinion().getCost());
+        Minion original = gameState.getSelectedMinion();
+        Minion kopie = original.copy();
+
+        gameState.deductCoins(kopie.getCost());
         try {
-            hex.setFill(ImagePatternHelper.createMinionPattern(gameState.getSelectedMinion().getType()));
+            hex.setFill(ImagePatternHelper.createMinionPattern(kopie.getType()));
         } catch (Exception e) {
             hex.setFill(Color.RED);
         }
 
-        gameState.placeMinion(tile, gameState.getSelectedMinion());
+        gameState.placeMinion(tile, kopie);
         currentlySelectedHex = null;
         updateUI();
     }
@@ -821,6 +836,7 @@ public class Controller2 {
         gameState.removeMinion(originalTile);
         gameState.placeMinion(targetTile, minion);
 
+
         // Update visuals
         resetTileVisual(originalTile);
         updateMinionVisual(targetTile, minion);
@@ -964,6 +980,10 @@ public class Controller2 {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateMinionCountLabel() {
+        minionCountLabel.setText(minionsProcessedThisTurn + "/2");
     }
 
 

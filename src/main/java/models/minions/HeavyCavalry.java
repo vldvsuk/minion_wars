@@ -18,4 +18,18 @@ public class HeavyCavalry extends Minion {
         return effectValue;
     }
 
+    @Override
+    public Minion copy() {
+        return new HeavyCavalry(
+                this.getType(),
+                this.getName(),
+                this.getCost(),
+                this.getMovement(),
+                this.getRange(),
+                this.getAttack(),
+                this.getDefence(),
+                this.effect,
+                this.effectValue
+        );
+    }
 }

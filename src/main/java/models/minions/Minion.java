@@ -60,4 +60,16 @@ public class Minion {
         currentDefence = currentDefence - getal;
 
     }
+    
+    public Minion copy() {
+        return new Minion(
+                this.type,
+                this.name,
+                this.cost,
+                this.movement,
+                this.range,
+                this.attack,
+                this.defence
+        );
+    }
 }
