@@ -52,12 +52,14 @@ public class Controller2 {
     private final List<Polygon> hexList = new ArrayList<>();
     private Polygon currentlySelectedHex = null;
     private boolean hasMoved = false;
+    public int acties = 0;
 
     private int minionsProcessedThisTurn = 0;
     private final Set<Minion> processedMinions = new HashSet<>();
-
     private VBox labelBox;
     private VBox tabBox;
+
+
     @FXML private SplitPane splitPane;
     @FXML private Label naamLabel;
     @FXML private Label coinsLabel;
@@ -136,8 +138,14 @@ public class Controller2 {
         currentTab = "Bewegen";
         if (!gameState.isPlacementPhase()){
             beurtButton.setDisable(true);
+            minionsProcessedThisTurn = 0;
+            acties = 0;
             updateMinionCountLabel();
+            processedMinions.clear();
+            hasMoved = false;
+
         }
+
     }
 
     private void resetAllOverlays() {
@@ -172,6 +180,7 @@ public class Controller2 {
 
         if (!gameState.isPlacementPhase()) {
             naPlacemet();
+            beurtButton.setDisable(minionsProcessedThisTurn < 2);
         }else{
             updateButtonStates();
             markHomebases();
@@ -207,6 +216,9 @@ public class Controller2 {
     }
 
     private void handleTileClick(Polygon hex) {
+
+        if (minionsProcessedThisTurn >= 2) return;
+
         HexagonData data = (HexagonData) hex.getUserData();
         Tile tile = data.getTile();
         Polygon overlayHex = data.getOverlay();
@@ -216,13 +228,20 @@ public class Controller2 {
         if (minion != null && processedMinions.contains(minion)) {
             return;
         }
+        if (acties >= 2){
+            acties=0;
+            hasMoved = false;
+        }
 
         if (!gameState.isPlacementPhase()) {
             // Handle movement
             if ("Bewegen".equals(currentTab)
                     && gameState.getSelectedTile() != null
                     && reachableTiles.contains(tile)) {
-                moveMinion(tile);
+                if (!hasMoved){
+                    moveMinion(tile);
+                }
+
                 return;
             }
             // Handle attack
@@ -238,14 +257,19 @@ public class Controller2 {
 
                 if (attacker != null && defender != null) {
                     defender.verminderCurrentDefence(attacker.getAttack());
-
-
                     if (defender.getCurrentDefence() <= 0) {
                         gameState.removeMinion(tile);
                         resetTileVisual(tile);
-                        checkVoorSpelEinde();
-
                     }
+                    if(acties == 1){
+                        processedMinions.add(attacker);
+                        minionsProcessedThisTurn++;
+                    }
+                    acties+=1;
+                    updateMinionCountLabel();
+                    checkTurnCompletion();
+                    checkVoorSpelEinde();
+
 
                     resetAllOverlays();
                     gameState.setSelectedTile(null);
@@ -519,7 +543,22 @@ public class Controller2 {
 
         Button blijvenStaanButton = new Button("Blijven staan");
         blijvenStaanButton.setFont(Font.font("System", FontWeight.BOLD, 18));
-        blijvenStaanButton.setOnAction(e -> System.out.println("Blijven staan geklikt!"));
+        blijvenStaanButton.setOnAction(e -> {
+            if (gameState.getSelectedTile() != null) {
+                Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
+                if(acties == 1){
+                    processedMinions.add(minion);
+                    minionsProcessedThisTurn++;
+                }
+                acties+=1;
+                hasMoved = true;
+                updateMinionCountLabel();
+                resetAllOverlays();
+                gameState.setSelectedTile(null);
+                currentlySelectedHex = null;
+                checkTurnCompletion();
+            }
+        });
 
         bewegenContent.getChildren().addAll(bewegenLabel, blijvenStaanButton);
         bewegenTab.setContent(bewegenContent);
@@ -547,6 +586,31 @@ public class Controller2 {
 
         Button geneesButton = new Button("Genees minion (+2hp)");
         geneesButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+
+        geneesButton.setOnAction(e -> {
+            if (gameState.getSelectedTile() != null) {
+                Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
+                if (minion != null) {
+                    int newDefence = Math.min(
+                            minion.getCurrentDefence() + 2,
+                            minion.getDefence()
+                    );
+
+                    minion.setCurrentDefence(newDefence);
+                    if(acties == 1){
+                        processedMinions.add(minion);
+                        minionsProcessedThisTurn++;
+                    }
+                    acties+=1;
+                    updateMinionCountLabel();
+
+                    resetAllOverlays();
+                    gameState.setSelectedTile(null);
+                    currentlySelectedHex = null;
+                    checkTurnCompletion();
+                }
+            }
+        });
 
         aanvallenContent.getChildren().addAll(
                 aanvallenLabel,
@@ -802,8 +866,14 @@ public class Controller2 {
     }
 
     private void handleRustButton() {
-        System.out.println("Rust geklikt!");
-        // Voeg hier je rust-functionaliteit toe
+
+        minionsProcessedThisTurn+=1;
+        acties+=2;
+
+
+
+        updateMinionCountLabel();
+        checkTurnCompletion();
     }
 
     private void calculateMovementRange(Tile startTile, int movement) {
@@ -845,6 +915,13 @@ public class Controller2 {
         reachableTiles.clear();
         hasMoved = true;
         resetAllOverlays();
+        updateMinionCountLabel();
+        checkTurnCompletion();
+        if(acties == 1){
+            processedMinions.add(minion);
+            minionsProcessedThisTurn++;
+        }
+        acties+=1;
     }
 
     private void updateMinionVisual(Tile tile, Minion minion) {
@@ -984,6 +1061,15 @@ public class Controller2 {
 
     private void updateMinionCountLabel() {
         minionCountLabel.setText(minionsProcessedThisTurn + "/2");
+    }
+
+    private void checkTurnCompletion() {
+        if (minionsProcessedThisTurn >= 2) {
+            beurtButton.setDisable(false);
+            resetAllOverlays();
+            gameState.setSelectedTile(null);
+            currentlySelectedHex = null;
+        }
     }
 
 

@@ -57,10 +57,13 @@ public class Minion {
     }
 
     public void verminderCurrentDefence(int getal) {
-        currentDefence = currentDefence - getal;
+        currentDefence -= getal;
 
     }
-    
+    public void setCurrentDefence (int getal){
+        currentDefence = getal;
+    }
+
     public Minion copy() {
         return new Minion(
                 this.type,
