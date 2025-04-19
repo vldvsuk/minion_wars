@@ -236,9 +236,7 @@ public class Controller2 {
 
         if (currentMinion == null) {
             currentMinion = clickedMinion;
-        }else if (currentMinion != clickedMinion)
-
-
+        }else if (currentMinion != clickedMinion)return;
 
 
 
@@ -248,6 +246,8 @@ public class Controller2 {
             currentMinion = null;
             gameState.setSelectedTile(null);
         }
+
+
 
 
         if (!gameState.isPlacementPhase()) {
@@ -270,6 +270,7 @@ public class Controller2 {
                     && gameState.isOccupied(tile)
                     && !gameState.isMinionOwnedByCurrentPlayer(tile) && !hasAttacked) {
 
+
                 Minion attacker = gameState.getPlacedMinion(gameState.getSelectedTile());
                 Minion defender = gameState.getPlacedMinion(tile);
 
@@ -277,7 +278,6 @@ public class Controller2 {
                     defender.verminderCurrentDefence(attacker.getAttack());
 
 
-                    System.out.println(attacker.getAttack());
 
                     if (defender.getCurrentDefence() <= 0) {
                         gameState.removeMinion(tile);
@@ -285,7 +285,7 @@ public class Controller2 {
                     }
 
                     if(hasMoved){
-                        processedMinions.add(defender);
+                        processedMinions.add(attacker);
                         minionsProcessedThisTurn++;
                     }
                     hasAttacked = true;
