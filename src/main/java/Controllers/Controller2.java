@@ -23,7 +23,6 @@ import models.GameState;
 import models.minions.Minion;
 import models.parsers.FieldParser;
 import models.parsers.MinionParser;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -308,7 +307,7 @@ public class Controller2 {
             if  (clickedMinion != null) {
             labelBox.getChildren().clear();
             HBox nieuweHBox = generateMinionInfo(tile);
-            labelBox.getChildren().add(0, nieuweHBox);
+            labelBox.getChildren().add(nieuweHBox);
         }
             //Bewegen
             gameState.setSelectedMinion(currentMinion);
@@ -449,6 +448,7 @@ public class Controller2 {
     }
 
     private void selectMinion(Tile tile, Polygon overlayHex) {
+        resetAllOverlays();
         if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
             gameState.setSelectedTile(tile);
 
