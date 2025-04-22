@@ -46,10 +46,15 @@ public class Controller2 {
     private MinionButtonFactory buttonFactory;
     private HexagonFactory hexagonFactory;
     private String currentTab = "Bewegen";
+
+
     private final Set<Tile> attackableTiles = new HashSet<>();
     private final Set<Tile> reachableTiles = new HashSet<>();
+    private final Set<Tile> powerTiles = new HashSet<>();
+
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
+
     private Polygon currentlySelectedHex = null;
     private boolean hasMoved = false;
     private boolean hasAttacked = false;
@@ -59,6 +64,10 @@ public class Controller2 {
     private final Set<Minion> processedMinions = new HashSet<>();
     private VBox labelBox;
     private VBox tabBox;
+
+    private boolean hasUsedBonus = false;
+    private Power selectedPower = null;
+
 
 
     @FXML private SplitPane splitPane;
@@ -115,8 +124,23 @@ public class Controller2 {
 
 
             hexData.getOverlay().setOnMouseClicked(e -> handleTileClick(hexData.getHex()));
+            hexData.getOverlay().setOnMouseEntered(e -> handleHoverStart(hexData.getTile()));
+            hexData.getOverlay().setOnMouseExited(e -> handleHoverEnd());
         }
     }
+
+    private void handleHoverStart(Tile hoveredTile) {
+        if (selectedPower != null && !hasUsedBonus) {
+            updatePowerRangeVisuals(hoveredTile);
+        }
+    }
+
+    private void handleHoverEnd() {
+        if (selectedPower != null) {
+            resetAllOverlays();
+        }
+    }
+
 
     private void setupKeyListener() {
         gameBoardContainer.sceneProperty().addListener((observable, oldScene, newScene) -> {
@@ -146,25 +170,25 @@ public class Controller2 {
             hasMoved = false;
             hasAttacked = false;
             currentMinion = null;
+            selectedPower = null;
+            hasUsedBonus = false;
 
         }
 
     }
 
     private void resetAllOverlays() {
-        reachableTiles.clear();
-        attackableTiles.clear();
-
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             Tile tile = data.getTile();
             Polygon overlay = data.getOverlay();
 
-
-            overlay.setFill(Color.TRANSPARENT);
-            overlay.setOpacity(0.7);
-            overlay.setStrokeWidth(1.5);
-            overlay.setStroke(Color.BLACK);
+            if (tile != gameState.getSelectedTile()) {
+                overlay.setFill(Color.TRANSPARENT);
+                overlay.setOpacity(0.7);
+                overlay.setStrokeWidth(1.5);
+                overlay.setStroke(Color.BLACK);
+            }
 
             if (!gameState.isPlacementPhase()) {
                 if (gameState.isOccupied(tile)) {
@@ -202,7 +226,7 @@ public class Controller2 {
 
 
         if (!gameState.isPlacementPhase()) {
-            naPlacemet();
+            afterPlacemet();
             beurtButton.setDisable(minionsProcessedThisTurn < 2);
         }else{
             updateButtonStates();
@@ -239,21 +263,27 @@ public class Controller2 {
     }
 
     private void handleTileClick(Polygon hex) {
-
-        if (minionsProcessedThisTurn >= 2) {
+        if(!gameState.isPlacementPhase()){
             resetAllOverlays();
-            return;
         }
 
         HexagonData data = (HexagonData) hex.getUserData();
         Tile tile = data.getTile();
         Polygon overlayHex = data.getOverlay();
 
+        if (selectedPower != null && !hasUsedBonus) {
+            handleBonus();
+            return;
+        }
 
 
+
+        if (minionsProcessedThisTurn >= 2) {
+            resetAllOverlays();
+            return;
+        }
 
         Minion clickedMinion = gameState.getPlacedMinion(tile);
-
 
         if (clickedMinion != null && processedMinions.contains(clickedMinion)) return;
 
@@ -274,16 +304,19 @@ public class Controller2 {
 
 
         if (!gameState.isPlacementPhase()) {
-            // Handle movement
+            //Minion info
+            if  (clickedMinion != null) {
+            labelBox.getChildren().clear();
+            HBox nieuweHBox = generateMinionInfo(tile);
+            labelBox.getChildren().add(0, nieuweHBox);
+        }
+            //Bewegen
             gameState.setSelectedMinion(currentMinion);
             if ("Bewegen".equals(currentTab)
                     && gameState.getSelectedTile() != null
                     && reachableTiles.contains(tile) && !hasMoved) {
                     moveMinion(tile);
                     selectMinion(tile, overlayHex);
-                    overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
-                    overlayHex.setOpacity(0.7);
-                    overlayHex.setStroke(Color.GREEN);
                 return;
             }
             // Handle attack
@@ -330,6 +363,7 @@ public class Controller2 {
             }
 
 
+
         }else return;
 
         // Reset previous selection
@@ -342,7 +376,7 @@ public class Controller2 {
         if (currentlySelectedHex == hex) {
             currentlySelectedHex = null;
             gameState.setSelectedTile(null);
-            resetAllOverlays();
+            if (!gameState.isPlacementPhase()) { resetAllOverlays();}
             return;
         }
 
@@ -363,11 +397,32 @@ public class Controller2 {
 
 
     }
+    private void handleBonus(){
+        switch (selectedPower.getType().toLowerCase()) {
+            case "fireball":
+                applyFireball();
+                break;
+            case "lightning":
+                applyFireball();
+                break;
+            case "healing":
+                applyHealing();
+                break;
+        }
+        selectedPower = null;
+        hasUsedBonus = true;
+        resetAllOverlays();
+        checkVoorSpelEinde();
+
+    }
+
+
     private void selectTile(Tile tile, Polygon overlayHex) {
+        gameState.setSelectedTile(null);
         resetAllOverlays();
 
 
-        overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
+        overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
         overlayHex.setOpacity(0.7);
         overlayHex.setStroke(Color.GREEN);
         if (!gameState.isPlacementPhase()) {
@@ -398,30 +453,23 @@ public class Controller2 {
             gameState.setSelectedTile(tile);
 
 
-            overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
+            overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
             overlayHex.setOpacity(0.7);
             overlayHex.setStroke(Color.GREEN);
 
             if (!gameState.isPlacementPhase()) {
-                labelBox.getChildren().clear();
-                HBox nieuweHBox = generateMinionInfo(tile);
-                labelBox.getChildren().add(0, nieuweHBox);
-
                 Minion minion = gameState.getPlacedMinion(tile);
 
 
-                if ("Aanvallen".equals(currentTab)) {
-                    if (!hasAttacked && !processedMinions.contains(minion)){
-                        calculateAttackRange(tile, minion.getRange());
-                        highlightAttackRange();
-                    }
-                } else {
+                if ("Bewegen".equals(currentTab)) {
                     calculateMovementRange(tile, minion.getMovement());
                     if(!hasMoved && !processedMinions.contains(minion)){
-                            highlightReachableTiles();
+                        highlightReachableTiles();
                     }
-
                 }
+
+
+
             }
         }
     }
@@ -459,7 +507,7 @@ public class Controller2 {
             } else {
                 if (hex == currentlySelectedHex && gameState.isOccupied(tile) &&
                         gameState.isMinionOwnedByCurrentPlayer(tile)) {
-                    overlayHex.setFill(Color.rgb(0, 255, 0, 0.2));
+                    overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
                     overlayHex.setOpacity(0.5);
                 }
             }
@@ -561,7 +609,7 @@ public class Controller2 {
         }
     }
 
-    private void naPlacemet(){
+    private void afterPlacemet(){
         removeMinionButtons();
         addCustomVBox();
         replaceCoinsDisplay();
@@ -617,6 +665,7 @@ public class Controller2 {
         Button blijvenStaanButton = new Button("Blijven staan");
         blijvenStaanButton.setFont(Font.font("System", FontWeight.BOLD, 18));
         blijvenStaanButton.setOnAction(e -> {
+            selectedPower = null;
             if (gameState.getSelectedTile() != null) {
                 Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
 
@@ -650,6 +699,20 @@ public class Controller2 {
 
         Button basisAanvalButton = new Button("Basis aanval");
         basisAanvalButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+        basisAanvalButton.setOnAction(e -> {
+            // Switch to the "Aanvallen" tab and update currentTab
+            selectedPower = null;
+            resetAllOverlays();
+            if (gameState.getSelectedTile() != null) {
+                Tile tile = gameState.getSelectedTile();
+                Minion minion = gameState.getPlacedMinion(tile);
+                if (minion != null && !hasAttacked) {
+                    resetAllOverlays();
+                    calculateAttackRange(tile, minion.getRange());
+                    highlightAttackRange();
+                }
+            }
+        });
 
         Button specialeAanvalButton = new Button("Speciale aanval");
         specialeAanvalButton.setFont(Font.font("System", FontWeight.BOLD, 18));
@@ -661,6 +724,7 @@ public class Controller2 {
         geneesButton.setFont(Font.font("System", FontWeight.BOLD, 18));
 
         geneesButton.setOnAction(e -> {
+            selectedPower = null;
             if (gameState.getSelectedTile() != null) {
                 Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
                 if (minion != null) {
@@ -799,7 +863,9 @@ public class Controller2 {
             detailsContainer.getChildren().addAll(textDetails, statsContainer);
             content.getChildren().addAll(powerImage, detailsContainer);
             powerButton.setGraphic(content);
-            powerButton.setOnAction(e -> System.out.println("de button is" + power.getType()));
+            powerButton.setOnAction(e -> { selectedPower = power;
+                                                        powerTiles.clear();});
+
             bonusContent.getChildren().add(powerButton);
         }
 
@@ -966,6 +1032,34 @@ public class Controller2 {
             }
         }
     }
+    private void calculateBonus(Tile startTile, int movement) {
+        powerTiles.clear();
+        for (Polygon hex : hexList) {
+            HexagonData data = (HexagonData) hex.getUserData();
+            Tile tile = data.getTile();
+
+            if (isValidBonusTarget(startTile, tile, movement)) {
+                powerTiles.add(tile);
+            }
+        }
+    }
+    private void updatePowerRangeVisuals(Tile centerTile) {
+        powerTiles.clear();
+        switch (selectedPower.getType().toLowerCase()) {
+            case "fireball":
+                calculateBonus(centerTile, selectedPower.getRadius());
+                break;
+            case "healing":
+                calculateBonus(centerTile, selectedPower.getRadius());
+                break;
+            case "lightning":
+                if (!gameState.isMinionOwnedByCurrentPlayer(centerTile)) {
+                    powerTiles.add(centerTile);
+                }
+                break;
+        }
+        highlightTiles(powerTiles, Color.BLUE);
+    }
 
     private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) {
 
@@ -973,6 +1067,14 @@ public class Controller2 {
 
         return distance <= maxDistance &&
                 !gameState.isOccupied(target) &&
+                List.of("dirt", "forest", "mountains").contains(target.getType());
+    }
+
+    private boolean isValidBonusTarget(Tile start, Tile target, int maxDistance) {
+
+        int distance = calculateHexDistance(start, target);
+
+        return distance <= maxDistance &&
                 List.of("dirt", "forest", "mountains").contains(target.getType());
     }
 
@@ -1072,6 +1174,8 @@ public class Controller2 {
     private void setupTabListener(TabPane tabPane) {
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             currentTab = newTab.getText();
+            selectedPower = null;
+
             if (!gameState.isPlacementPhase() && gameState.getSelectedTile() != null) {
                 Tile tile = gameState.getSelectedTile();
                 Minion minion = gameState.getPlacedMinion(tile);
@@ -1079,13 +1183,12 @@ public class Controller2 {
 
 
 
+
                 if (minion != null) {
-                    if (!"Bewegen".equals(currentTab) && !hasAttacked) {
-                        calculateAttackRange(tile, minion.getRange());
-                        highlightAttackRange();
-                    } else if (!hasMoved) {
+                    if ("Bewegen".equals(currentTab) && !hasMoved) {
                         calculateMovementRange(tile, minion.getMovement());
                         highlightReachableTiles();
+
                     }
                 }
             }
@@ -1106,7 +1209,7 @@ public class Controller2 {
             } else if (tiles.contains(data.getTile())) {
                 overlay.setFill(color);
                 overlay.setOpacity(0.4);
-            } else if (gameState.isOccupied(tile)) {
+            } else  {
                 overlay.setFill(Color.TRANSPARENT);
             }
 
@@ -1193,6 +1296,32 @@ public class Controller2 {
         hbox.getChildren().addAll(imageView, textBox);
 
         return hbox;
+    }
+
+    private void applyFireball() {
+
+        for (Tile tile : powerTiles) {
+            if (gameState.isOccupied(tile) && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                Minion minion = gameState.getPlacedMinion(tile);
+                minion.verminderCurrentDefence(selectedPower.getValue());
+                if (minion.getCurrentDefence() <= 0) {
+                    gameState.removeMinion(tile);
+                    resetTileVisual(tile);
+                }
+            }
+        }
+    }
+
+    private void applyHealing() {
+        for (Tile tile : powerTiles) {
+            if (gameState.isOccupied(tile) && gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                Minion minion = gameState.getPlacedMinion(tile);
+                minion.setCurrentDefence(Math.min(
+                        minion.getCurrentDefence() + selectedPower.getValue(),
+                        minion.getDefence()
+                ));
+            }
+        }
     }
 
 
