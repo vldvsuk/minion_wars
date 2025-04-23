@@ -1,6 +1,8 @@
 package models;
 import models.grond.Tile;
 import models.minions.Minion;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,18 +20,24 @@ public class GameState {
     private final String speler2Naam;
     private boolean placementPhase = true;
     private int placementTurns = 0;
+    private List<Tile> tiles;
 
 
-    public GameState(String speler1Naam, String speler2Naam, int startCoins) {
+    public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
         this.speler1Naam = speler1Naam;
         this.speler2Naam = speler2Naam;
         this.speler1Coins = startCoins;
         this.speler2Coins = startCoins;
+        this.tiles = tiles;
     }
 
 
     public boolean isSpeler1AanZet() {
         return isSpeler1AanZet;
+    }
+
+    public List<Tile> getTiles() {
+        return tiles;
     }
 
     public void switchPlayer() {

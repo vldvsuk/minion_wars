@@ -19,6 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import models.GameLogic;
 import models.GameState;
 import models.minions.Minion;
 import models.parsers.FieldParser;
@@ -41,15 +42,16 @@ import view.ui.UIManager;
 
 public class Controller2 {
     private GameState gameState;
+    private GameLogic gameLogic;
     private UIManager uiManager;
     private MinionButtonFactory buttonFactory;
     private HexagonFactory hexagonFactory;
     private String currentTab = "Bewegen";
 
 
-    private final Set<Tile> attackableTiles = new HashSet<>();
-    private final Set<Tile> reachableTiles = new HashSet<>();
-    private final Set<Tile> powerTiles = new HashSet<>();
+    private Set<Tile> attackableTiles = new HashSet<>();
+    private Set<Tile> reachableTiles = new HashSet<>();
+    private Set<Tile> powerTiles = new HashSet<>();
 
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
@@ -112,9 +114,7 @@ public class Controller2 {
         }
     }
 
-    private void createHexagons() {
-        FieldParser fieldParser = new FieldParser();
-        List<Tile> tiles = fieldParser.parseField();
+    private void createHexagons(List<Tile> tiles) {
         for (Tile tile : tiles) {
             HexagonData hexData = hexagonFactory.createHexagon(tile);
             hexList.add(hexData.getHex());
@@ -210,13 +210,17 @@ public class Controller2 {
 
 
     public void setInfo(String speler1, String speler2, int munten) {
-        this.gameState = new GameState(speler1, speler2, munten);
+        FieldParser fieldParser = new FieldParser();
+        List<Tile> tiles = fieldParser.parseField();
+
+        this.gameState = new GameState(speler1, speler2, munten, tiles);
+        this.gameLogic = new GameLogic(gameState);
         this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
 
         updateUI();
         createMinionButtons();
-        createHexagons();
+        createHexagons(tiles);
         markHomebases();
     }
 
@@ -418,7 +422,10 @@ public class Controller2 {
 
     private void selectTile(Tile tile, Polygon overlayHex) {
         gameState.setSelectedTile(null);
-        resetAllOverlays();
+        if (!gameState.isPlacementPhase()) {
+            resetAllOverlays();
+        }
+
 
 
         overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
@@ -448,7 +455,10 @@ public class Controller2 {
     }
 
     private void selectMinion(Tile tile, Polygon overlayHex) {
-        resetAllOverlays();
+       if (!gameState.isPlacementPhase()){
+           resetAllOverlays();
+       }
+
         if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
             gameState.setSelectedTile(tile);
 
@@ -462,10 +472,11 @@ public class Controller2 {
 
 
                 if ("Bewegen".equals(currentTab)) {
-                    calculateMovementRange(tile, minion.getMovement());
                     if(!hasMoved && !processedMinions.contains(minion)){
+                        reachableTiles = gameLogic.calculateMovementRange(tile, minion.getMovement());
                         highlightReachableTiles();
                     }
+
                 }
 
 
@@ -708,7 +719,7 @@ public class Controller2 {
                 Minion minion = gameState.getPlacedMinion(tile);
                 if (minion != null && !hasAttacked) {
                     resetAllOverlays();
-                    calculateAttackRange(tile, minion.getRange());
+                    attackableTiles = gameLogic.calculateAttackRange(tile, minion.getRange());
                     highlightAttackRange();
                 }
             }
@@ -1008,11 +1019,15 @@ public class Controller2 {
     }
 
     private void handleRustButton() {
-        hasMoved = true;
-        hasAttacked = true;
-        minionsProcessedThisTurn++;
-        currentMinion = null;
-        processedMinions.add(gameState.getSelectedMinion());
+        Tile tile = gameState.getSelectedTile();
+
+        if (gameState.getPlacedMinion(tile) != null) {
+            hasMoved = true;
+            hasAttacked = true;
+            minionsProcessedThisTurn++;
+            processedMinions.add(gameState.getPlacedMinion(tile));
+        }
+
 
         resetAllOverlays();
         updateMinionCountLabel();
@@ -1021,36 +1036,15 @@ public class Controller2 {
 
     }
 
-    private void calculateMovementRange(Tile startTile, int movement) {
-        reachableTiles.clear();
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Tile tile = data.getTile();
 
-            if (isValidMoveTarget(startTile, tile, movement)) {
-                reachableTiles.add(tile);
-            }
-        }
-    }
-    private void calculateBonus(Tile startTile, int movement) {
-        powerTiles.clear();
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Tile tile = data.getTile();
-
-            if (isValidBonusTarget(startTile, tile, movement)) {
-                powerTiles.add(tile);
-            }
-        }
-    }
     private void updatePowerRangeVisuals(Tile centerTile) {
         powerTiles.clear();
         switch (selectedPower.getType().toLowerCase()) {
             case "fireball":
-                calculateBonus(centerTile, selectedPower.getRadius());
+                powerTiles = gameLogic.calculateBonusRange(centerTile, selectedPower.getRadius());
                 break;
             case "healing":
-                calculateBonus(centerTile, selectedPower.getRadius());
+                powerTiles = gameLogic.calculateBonusRange(centerTile, 2);
                 break;
             case "lightning":
                 if (!gameState.isMinionOwnedByCurrentPlayer(centerTile)) {
@@ -1061,22 +1055,6 @@ public class Controller2 {
         highlightTiles(powerTiles, Color.BLUE);
     }
 
-    private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) {
-
-        int distance = calculateHexDistance(start, target);
-
-        return distance <= maxDistance &&
-                !gameState.isOccupied(target) &&
-                List.of("dirt", "forest", "mountains").contains(target.getType());
-    }
-
-    private boolean isValidBonusTarget(Tile start, Tile target, int maxDistance) {
-
-        int distance = calculateHexDistance(start, target);
-
-        return distance <= maxDistance &&
-                List.of("dirt", "forest", "mountains").contains(target.getType());
-    }
 
 
     private void moveMinion(Tile targetTile) {
@@ -1122,53 +1100,8 @@ public class Controller2 {
         }
     }
 
-    private int[] parseAttackRange(String rangeStr) {
-        String[] parts = rangeStr.split(" ");
-        int min = Integer.parseInt(parts[0]);
-        int max = Integer.parseInt(parts[1]);
-        return new int[]{min, max};
-    }
-
-    private int calculateHexDistance(Tile start, Tile target) {
-        int startX = start.getX();
-        int startY = start.getY();
-        int targetX = target.getX();
-        int targetY = target.getY();
-
-        // axial coordinates
-        int q1 = startX - (startY - (startY&1)) / 2;
-        int r1 = startY;
-        int q2 = targetX - (targetY - (targetY&1)) / 2;
-        int r2 = targetY;
-
-        return (Math.abs(q1 - q2)
-                + Math.abs(q1 + r1 - q2 - r2)
-                + Math.abs(r1 - r2)) / 2;
-    }
 
 
-    private void calculateAttackRange(Tile startTile, String attackRangeStr) {
-        attackableTiles.clear();
-        try {
-            int[] range = parseAttackRange(attackRangeStr);
-            int minRange = range[0];
-            int maxRange = range[1];
-
-            for (Polygon hex : hexList) {
-                HexagonData data = (HexagonData) hex.getUserData();
-                Tile tile = data.getTile();
-                int distance = calculateHexDistance(startTile, tile);
-
-                if (distance >= minRange
-                        && distance <= maxRange
-                        && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
-                    attackableTiles.add(tile);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Fout bij berekenen aanvalsbereik: " + e.getMessage());
-        }
-    }
 
 
     private void setupTabListener(TabPane tabPane) {
@@ -1186,7 +1119,7 @@ public class Controller2 {
 
                 if (minion != null) {
                     if ("Bewegen".equals(currentTab) && !hasMoved) {
-                        calculateMovementRange(tile, minion.getMovement());
+                        reachableTiles = gameLogic.calculateMovementRange(tile, minion.getMovement());
                         highlightReachableTiles();
 
                     }
@@ -1323,7 +1256,4 @@ public class Controller2 {
             }
         }
     }
-
-
-
 }

@@ -13,6 +13,8 @@ import view.images.ImageLoader;
 
 import java.util.List;
 
+import static view.button.StatBoxFactory.createStatBox;
+
 public class MinionButtonFactory {
     private final GameState gameState;
     private final List<Button> minionButtons;
@@ -103,19 +105,6 @@ public class MinionButtonFactory {
         return statsBox;
     }
 
-    private HBox createStatBox(Image icon, String value, String styleClass) {
-        HBox box = new HBox(5);
-        ImageView iconView = new ImageView(icon);
-        iconView.setFitHeight(20);
-        iconView.setFitWidth(20);
-        iconView.setPreserveRatio(true);
-
-        Label label = new Label(value);
-        label.getStyleClass().add(styleClass);
-
-        box.getChildren().addAll(iconView, label);
-        return box;
-    }
 
     private void handleButtonClick(Button button, Minion minion) {
         minionButtons.forEach(btn -> btn.getStyleClass().remove("selected"));
