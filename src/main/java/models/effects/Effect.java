@@ -11,6 +11,16 @@ public class Effect {
         this.value = value;
     }
 
+    public int getDuration() {
+        return duration;
+    }
+    public int getValue() {
+        return value;
+    }
+    public String getType() {
+        return type;
+    }
+
     // Getters en setters
     @Override
     public String toString() {

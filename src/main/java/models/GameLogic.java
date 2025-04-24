@@ -12,6 +12,10 @@ public class GameLogic {
 
     public Set<Tile> calculateMovementRange(Tile startTile, int movement) {
         Set<Tile> reachable = new HashSet<>();
+        if ("forest".equals(startTile.getType())){
+            movement-=1;
+        }
+
         for (Tile tile : gameState.getTiles()) {
             if (isValidMoveTarget(startTile, tile, movement)) {
                 reachable.add(tile);
@@ -22,6 +26,7 @@ public class GameLogic {
 
     private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) {
         int distance = calculateHexDistance(start, target);
+
         return distance <= maxDistance &&
                 !gameState.isOccupied(target) &&
                 List.of("dirt", "forest", "mountains").contains(target.getType());
@@ -36,7 +41,7 @@ public class GameLogic {
 
             for (Tile tile : gameState.getTiles()) {
                 int distance = calculateHexDistance(startTile, tile);
-                if (distance >= minRange && distance <= maxRange && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                if (distance >= minRange && distance <= maxRange && !gameState.isMinionOwnedByCurrentPlayer(tile) &&  !"mountains".equals(startTile.getType())) {
                     attackable.add(tile);
                 }
             }
@@ -76,5 +81,14 @@ public class GameLogic {
             }
         }
         return powerTiles;
+    }
+    public boolean  hasEnemyInAttackRange(Set<Tile> attackable){
+
+        for (Tile tile : attackable) {
+            if (gameState.isOccupied(tile)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

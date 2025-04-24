@@ -1,4 +1,4 @@
-package view.panels;
+package view.panel;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -9,71 +9,75 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
-import models.GameState;
-import models.minions.Minion;
 import models.powers.Power;
 import models.parsers.PowerParser;
 import view.images.ImageLoader;
 import view.button.StatBoxFactory;
-
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ActionPanel extends VBox {
+public class ActionPanel {
 
-    private final GameState gameState;
+    private Button specialAttackButton;
+    private Button healButton;
+    private Button stayButton;
+    private Button basicAttackButton;
+
+
     private final Runnable onStayAction;
     private final Runnable onBasicAttackAction;
     private final Runnable onHealAction;
+    private final Runnable onSpecialAttackAction;
     private final Consumer<Power> onPowerSelected;
     private final Consumer<String> onTabChanged;
 
-    public ActionPanel(GameState gameState,
-                       Runnable onStayAction,
+    public ActionPanel(Runnable onStayAction,
                        Runnable onBasicAttackAction,
                        Runnable onHealAction,
+                       Runnable onSpecialAttackAction,
                        Consumer<Power> onPowerSelected,
                        Consumer<String> onTabChanged) {
-        this.gameState = gameState;
         this.onStayAction = onStayAction;
         this.onBasicAttackAction = onBasicAttackAction;
         this.onHealAction = onHealAction;
         this.onPowerSelected = onPowerSelected;
         this.onTabChanged = onTabChanged;
-
-        initializePanel();
+        this.onSpecialAttackAction = onSpecialAttackAction;
     }
 
-    private void initializePanel() {
-        setSpacing(10);
-        setPrefWidth(180);
-        setAlignment(Pos.TOP_CENTER);
-
-        VBox labelBox = createLabelBox();
-        TabPane tabPane = createTabPane();
-
-        getChildren().addAll(labelBox, tabPane);
+    public VBox initializePanel() {
+        VBox topVBox = new VBox(10);
+        topVBox.setId("topVBox");
+        topVBox.setPrefWidth(180);
+        topVBox.setAlignment(Pos.TOP_CENTER);
+        return topVBox;
     }
 
-    private VBox createLabelBox() {
-        VBox box = new VBox();
-        box.setAlignment(Pos.CENTER);
+    public VBox createLabelBox() {
+        VBox labelBox = new VBox();
+        labelBox.setAlignment(Pos.CENTER);
         Label label = new Label("Kies een minion!");
         label.setFont(Font.font("System", FontWeight.BOLD, 24));
-        box.setMinHeight(100);
-        box.getChildren().add(label);
-        return box;
+        labelBox.setMinHeight(100);
+        return labelBox;
     }
 
-    private TabPane createTabPane() {
+    public VBox createTabPane() {
+        VBox tabBox = new VBox();
+        tabBox.setAlignment(Pos.BOTTOM_CENTER);
+        tabBox.setPrefHeight(300);
+        tabBox.setPrefWidth(180);
+
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabPane.setMinHeight(600);
+        tabPane.setPrefWidth(180);
+        Tab bewegenTab = createMovementTab();
+        Tab aanvallenTab = createAttackTab();
+        Tab bonusTab = createBonusTab();
 
-        tabPane.getTabs().addAll(
-                createMovementTab(),
-                createAttackTab(),
-                createBonusTab()
-        );
+        tabPane.getTabs().addAll(bewegenTab, aanvallenTab, bonusTab);
+        tabBox.getChildren().add(tabPane);
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab != null) {
@@ -81,7 +85,8 @@ public class ActionPanel extends VBox {
             }
         });
 
-        return tabPane;
+
+        return tabBox;
     }
 
     private Tab createMovementTab() {
@@ -95,7 +100,7 @@ public class ActionPanel extends VBox {
         label.setWrapText(true);
         label.setMaxWidth(160);
 
-        Button stayButton = new Button("Blijven staan");
+        stayButton = new Button("Blijven staan");
         stayButton.setFont(Font.font("System", FontWeight.BOLD, 18));
         stayButton.setOnAction(e -> onStayAction.run());
 
@@ -114,19 +119,21 @@ public class ActionPanel extends VBox {
         label.setWrapText(true);
         label.setMaxWidth(160);
 
-        Button basicAttackButton = new Button("Basis aanval");
+        basicAttackButton = new Button("Basis aanval");
         basicAttackButton.setFont(Font.font("System", FontWeight.BOLD, 18));
         basicAttackButton.setOnAction(e -> onBasicAttackAction.run());
 
-        Button specialAttackButton = new Button("Speciale aanval");
+        specialAttackButton = new Button("Speciale aanval");
         specialAttackButton.setFont(Font.font("System", FontWeight.BOLD, 18));
+        specialAttackButton.setOnAction(e -> onSpecialAttackAction.run());
 
         Label orLabel = new Label("of");
         orLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
 
-        Button healButton = new Button("Genees minion (+2hp)");
+        healButton = new Button("Genees minion (+2hp)");
         healButton.setFont(Font.font("System", FontWeight.BOLD, 18));
         healButton.setOnAction(e -> onHealAction.run());
+
 
         content.getChildren().addAll(
                 label,
@@ -208,6 +215,7 @@ public class ActionPanel extends VBox {
         button.setGraphic(mainContent);
 
         button.setOnAction(e -> onPowerSelected.accept(power));
+
         return button;
     }
 
@@ -247,5 +255,22 @@ public class ActionPanel extends VBox {
         }
 
         return statsContainer;
+    }
+
+    public void setSpecialAttackVisible(boolean visible) {
+        specialAttackButton.setDisable(!visible);
+    }
+
+    public void setBasicAndSpecialAttackDisabled(boolean attackDisabled) {
+        basicAttackButton.setDisable(attackDisabled);
+        specialAttackButton.setDisable(attackDisabled);
+    }
+
+    public void setHealDisabled(boolean healDisabled) {
+        healButton.setDisable(healDisabled);
+    }
+
+    public void setStayButtonDisabled(boolean stayDisabled) {
+        stayButton.setDisable(stayDisabled);
     }
 }
