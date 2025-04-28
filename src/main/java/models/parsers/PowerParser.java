@@ -54,7 +54,7 @@ public class PowerParser {
         return switch (type.toLowerCase()) {
             case "fireball" -> new Fireball(type, name, radius, value, effect, effectValue);
             case "lightning" -> new Lightning(type, name, radius, value, effect, effectValue);
-            case "heal" -> new Heal(type, name, radius, value);
+            case "heal" -> new Heal(type, name, radius, value, effect, effectValue);
             default -> throw new IllegalArgumentException("Onbekend power-type: " + type);
         };
     }

@@ -36,12 +36,17 @@ public class MinionParser {
                 int cost = Integer.parseInt(minionElement.getAttributeValue("cost"));
                 int movement = Integer.parseInt(minionElement.getAttributeValue("movement"));
                 String range = minionElement.getAttributeValue("range");
+
+                String[] rangeParts = range.split(" ");
+                int minRange = Integer.parseInt(rangeParts[0]);
+                int maxRange = Integer.parseInt(rangeParts[1]);
+
                 int attack = Integer.parseInt(minionElement.getAttributeValue("attack"));
                 int defence = Integer.parseInt(minionElement.getAttributeValue("defence"));
                 String effect = minionElement.getAttributeValue("effect", "none");
                 int effectValue = Integer.parseInt(minionElement.getAttributeValue("effect-value", "0"));
 
-                Minion minion = createMinion(type, name, cost, movement, range, attack, defence, effect, effectValue);
+                Minion minion = createMinion(type, name, cost, movement,  minRange, maxRange, attack, defence, effect, effectValue);
                 minions.add(minion);
             }
 
@@ -51,19 +56,21 @@ public class MinionParser {
 
         return minions;
     }
-    private Minion createMinion(String type, String name, int cost, int movement, String range, int attack, int defence, String effect, int effectValue) {
+    private Minion createMinion(String type, String name, int cost, int movement,
+                               int minRange, int maxRange, int attack, int defence,
+                               String effect, int effectValue) {
         return switch (type.toLowerCase()) {
-            case "militia" -> new Militia(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "spear" -> new Spear(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "sword" -> new Sword(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "axe" -> new Axe(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "archer" -> new Archer(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "scout" -> new Scout(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "cavalry" -> new Cavalry(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "mounted-archer" -> new MountedArcher(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "heavy-cavalry" -> new HeavyCavalry(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "catapult" -> new Catapult(type, name, cost, movement, range, attack, defence, effect, effectValue);
-            case "trebuchet" -> new Trebuchet(type, name, cost, movement, range, attack, defence, effect, effectValue);
+            case "militia" -> new Militia(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "spear" -> new Spear(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "sword" -> new Sword(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "axe" -> new Axe(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "archer" -> new Archer(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "scout" -> new Scout(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "cavalry" -> new Cavalry(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "mounted-archer" -> new MountedArcher(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "heavy-cavalry" -> new HeavyCavalry(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "catapult" -> new Catapult(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
+            case "trebuchet" -> new Trebuchet(type, name, cost, movement, minRange, maxRange, attack, defence, effect, effectValue);
             default -> throw new IllegalArgumentException("Onbekend minion-type: " + type);
         };
     }

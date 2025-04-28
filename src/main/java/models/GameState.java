@@ -1,6 +1,9 @@
 package models;
+import models.effects.Effect;
 import models.grond.Tile;
 import models.minions.Minion;
+import models.parsers.EffectParser;
+import models.powers.Power;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +24,8 @@ public class GameState {
     private boolean placementPhase = true;
     private int placementTurns = 0;
     private List<Tile> tiles;
+    private List<Effect> allEffects;
+    private Power selectedPower = null;
 
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
@@ -29,6 +34,7 @@ public class GameState {
         this.speler1Coins = startCoins;
         this.speler2Coins = startCoins;
         this.tiles = tiles;
+        this.allEffects = new EffectParser().parseEffects();
     }
 
 
@@ -147,4 +153,19 @@ public class GameState {
         return null;
     }
 
+    public Effect findEffectByName(String effectName) {
+        for (Effect effect : allEffects) {
+            if (effect.getType().equalsIgnoreCase(effectName)) {
+                return effect;
+            }
+        }
+        return null;
+    }
+
+    public Power getSelectedPower() {
+        return selectedPower;
+    }
+    public void setSelectedPower(Power selectedPower) {
+        this.selectedPower = selectedPower;
+    }
 }

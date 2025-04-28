@@ -9,10 +9,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
+import models.GameState;
 import models.powers.Power;
 import models.parsers.PowerParser;
 import view.images.ImageLoader;
 import view.button.StatBoxFactory;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -22,6 +25,8 @@ public class ActionPanel {
     private Button healButton;
     private Button stayButton;
     private Button basicAttackButton;
+    private final List<Button> powerButtons = new ArrayList<>();
+    private final GameState gameState;
 
 
     private final Runnable onStayAction;
@@ -31,12 +36,13 @@ public class ActionPanel {
     private final Consumer<Power> onPowerSelected;
     private final Consumer<String> onTabChanged;
 
-    public ActionPanel(Runnable onStayAction,
+    public ActionPanel(GameState gameState, Runnable onStayAction,
                        Runnable onBasicAttackAction,
                        Runnable onHealAction,
                        Runnable onSpecialAttackAction,
                        Consumer<Power> onPowerSelected,
                        Consumer<String> onTabChanged) {
+        this.gameState = gameState;
         this.onStayAction = onStayAction;
         this.onBasicAttackAction = onBasicAttackAction;
         this.onHealAction = onHealAction;
@@ -59,6 +65,7 @@ public class ActionPanel {
         Label label = new Label("Kies een minion!");
         label.setFont(Font.font("System", FontWeight.BOLD, 24));
         labelBox.setMinHeight(100);
+
         return labelBox;
     }
 
@@ -214,7 +221,11 @@ public class ActionPanel {
         mainContent.getChildren().addAll(powerImage, detailsContainer);
         button.setGraphic(mainContent);
 
-        button.setOnAction(e -> onPowerSelected.accept(power));
+        button.setOnAction(e -> {
+            onPowerSelected.accept(power);
+        });
+
+        powerButtons.add(button);
 
         return button;
     }
@@ -272,5 +283,15 @@ public class ActionPanel {
 
     public void setStayButtonDisabled(boolean stayDisabled) {
         stayButton.setDisable(stayDisabled);
+    }
+
+    public void updatePowerButtonsStyle() {
+        powerButtons.forEach(btn -> {
+            btn.getStyleClass().remove("selected");
+            Power power = (Power) btn.getUserData();
+            if (power == gameState.getSelectedPower()) {
+                btn.getStyleClass().add("selected");
+            }
+        });
     }
 }

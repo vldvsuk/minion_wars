@@ -1,5 +1,6 @@
 package view.ui;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -10,6 +11,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import models.GameState;
+import models.effects.Effect;
 import models.grond.Tile;
 import models.minions.Minion;
 import view.images.ImageLoader;
@@ -24,12 +26,29 @@ public class InfoPanel {
         this.gameState = gameState;
     }
 
-    public HBox generateMinionInfo(Tile selectedTile, Minion selectedMinion) {
+    public VBox generateMinionInfo(Tile selectedTile, Minion selectedMinion) {
+        VBox mainContainer = new VBox();
+        mainContainer.setAlignment(Pos.TOP_LEFT);
+
+        //controleer of van currentSpeler
+        boolean isNotCurrentPlayerMinion = !gameState.isMinionOwnedByCurrentPlayer(selectedTile);
+
+        // Pas de achtergrondkleur aan op basis van de eigenaar
+        if (isNotCurrentPlayerMinion) {
+            mainContainer.setStyle("-fx-background-color: #ffcccc;"); // Lichtrode achtergrond
+        } else {
+            mainContainer.setStyle("-fx-background-color: transparent;");
+        }
 
         HBox hbox1 = new HBox(10);
-
         hbox1.setAlignment(Pos.CENTER_LEFT);
 
+
+        if (isNotCurrentPlayerMinion) {
+            hbox1.setStyle("-fx-background-color: #ffcccc;");
+        } else {
+            hbox1.setStyle("-fx-background-color: transparent;");
+        }
 
         // Minion afbeelding
         ImageView imageView = new ImageView();
@@ -56,11 +75,9 @@ public class InfoPanel {
         HBox stats = new HBox(7);
         stats.setAlignment(Pos.CENTER_LEFT);
 
-
         HBox nameBox = new HBox();
         nameBox.setAlignment(Pos.CENTER_LEFT);
         nameBox.setPrefWidth(150);
-
 
         // Naam label
         Label nameLabel = new Label(selectedMinion.getName());
@@ -71,7 +88,7 @@ public class InfoPanel {
         // Attack en defense stats
         HBox attackBox = createStatBox(
                 ImageLoader.loadAttackIcon(),
-                String.valueOf(selectedMinion.getAttack()),
+                String.valueOf(selectedMinion.getCurrentAttack()),
                 "attack-stat"
         );
 
@@ -90,14 +107,46 @@ public class InfoPanel {
         tilesBox.setAlignment(Pos.CENTER_LEFT);
 
         Label tileLabel = new Label("Ondergrond: " + selectedTile.getType());
-        tileLabel.setFont(Font.font("System",FontWeight.BOLD, 23));
+        tileLabel.setFont(Font.font("System", FontWeight.BOLD, 23));
         tilesBox.getChildren().add(tileLabel);
-
 
         contentVBox.getChildren().addAll(nameAndStats, tilesBox);
         hbox1.getChildren().addAll(imageView, contentVBox);
+        mainContainer.getChildren().add(hbox1);
 
-        return hbox1;
+        if (!selectedMinion.getActiveEffects().isEmpty()) {
+            VBox effectsBox = new VBox(5);
+            effectsBox.setAlignment(Pos.CENTER_LEFT);
+            effectsBox.setPadding(new Insets(10, 0, 0, 0));
+
+            for (Effect effect : selectedMinion.getActiveEffects()) {
+                HBox effectContainer = new HBox(10);
+                effectContainer.setAlignment(Pos.CENTER_LEFT);
+
+                // Effect naam
+                HBox nameEffect = new HBox();
+                nameEffect.setAlignment(Pos.CENTER_LEFT);
+                Label effectName = new Label(effect.getName());
+                effectName.setFont(Font.font("System", FontWeight.BOLD, 15));
+                nameEffect.getChildren().add(effectName);
+                System.out.println(effect.getName());
+
+                // Duration
+                HBox durationBox = new HBox();
+                durationBox.setMinWidth(225);
+                durationBox.setAlignment(Pos.CENTER_RIGHT);
+                Label durationLabel = new Label("nog " + effect.getDuration() + " beurten");
+                durationLabel.setFont(Font.font("System", FontWeight.BOLD, 15));
+                durationBox.getChildren().add(durationLabel);
+
+                effectContainer.getChildren().addAll(nameEffect, durationBox);
+                effectsBox.getChildren().add(effectContainer);
+            }
+
+            mainContainer.getChildren().add(effectsBox);
+        }
+
+        return mainContainer;
     }
 
 

@@ -1,7 +1,7 @@
 package models.effects;
 
 public class Slow extends Effect {
-    public Slow(int duration, int value) {
-        super("slow", duration, value);
+    public Slow(String name, int duration, int value) {
+        super("slow", name, duration, value);
     }
 }

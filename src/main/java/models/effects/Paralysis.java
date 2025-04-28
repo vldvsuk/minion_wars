@@ -2,7 +2,7 @@ package models.effects;
 
 
 public class Paralysis extends Effect {
-    public Paralysis(int duration) {
-        super("paralysis", duration, 0); // Paralysis heeft geen value
+    public Paralysis(String name, int duration, int value) {
+        super("paralysis", name,  duration, value);
     }
 }

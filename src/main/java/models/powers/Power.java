@@ -5,12 +5,16 @@ public class Power {
     private final int radius;
     private final int value;
     private final String name;
+    private final String effect;
+    private final int effectValue;
 
-    public Power(String type, String name, int radius, int value) {
+    public Power(String type, String name, int radius, int value, String effect, int effectValue) {
         this.type = type;
         this.radius = radius;
         this.value = value;
         this.name = name;
+        this.effect = effect;
+        this.effectValue = effectValue;
     }
 
     // Getters en setters
@@ -26,12 +30,13 @@ public class Power {
     public String getName() {
         return name;
     }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{" +
-                "type='" + type + '\'' +
-                ", radius=" + radius +
-                ", value=" + value + "}";
+    public String getEffect() {
+        return effect;
+    }
+    public int getEffectValue() {
+        return effectValue;
+    }
+    public boolean hasEffect(){
+        return !effect.equals("none");
     }
 }

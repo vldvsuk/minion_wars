@@ -2,6 +2,7 @@ package models;
 
 import java.util.*;
 import models.grond.Tile;
+import models.minions.Minion;
 
 public class GameLogic {
     private final GameState gameState;
@@ -26,22 +27,23 @@ public class GameLogic {
 
     private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) {
         int distance = calculateHexDistance(start, target);
+        Minion minion = gameState.getPlacedMinion(start);
 
         return distance <= maxDistance &&
                 !gameState.isOccupied(target) &&
-                List.of("dirt", "forest", "mountains").contains(target.getType());
+                List.of("dirt", "forest", "mountains").contains(target.getType()) && !minion.isParalized();
     }
 
-    public Set<Tile> calculateAttackRange(Tile startTile, String attackRangeStr) {
+    public Set<Tile> calculateAttackRange(Tile startTile, int minRange, int maxRange) {
         Set<Tile> attackable = new HashSet<>();
+        Minion minion = gameState.getPlacedMinion(startTile);
+
         try {
-            int[] range = parseAttackRange(attackRangeStr);
-            int minRange = range[0];
-            int maxRange = range[1];
 
             for (Tile tile : gameState.getTiles()) {
                 int distance = calculateHexDistance(startTile, tile);
-                if (distance >= minRange && distance <= maxRange && !gameState.isMinionOwnedByCurrentPlayer(tile) &&  !"mountains".equals(startTile.getType())) {
+                if (distance >= minRange && distance <= maxRange && !gameState.isMinionOwnedByCurrentPlayer(tile) &&
+                        !"mountains".equals(startTile.getType()) && !minion.isParalized()) {
                     attackable.add(tile);
                 }
             }
@@ -51,13 +53,6 @@ public class GameLogic {
         return attackable;
     }
 
-    private int[] parseAttackRange(String rangeStr) {
-        String[] parts = rangeStr.split(" ");
-        int min = Integer.parseInt(parts[0]);
-        int max = Integer.parseInt(parts[1]);
-        return new int[]{min, max};
-    }
-
     public int calculateHexDistance(Tile start, Tile target) {
         int startX = start.getX();
         int startY = start.getY();
@@ -65,11 +60,9 @@ public class GameLogic {
         int targetY = target.getY();
 
         int q1 = startX - (startY - (startY & 1)) / 2;
-        int r1 = startY;
         int q2 = targetX - (targetY - (targetY & 1)) / 2;
-        int r2 = targetY;
 
-        return (Math.abs(q1 - q2) + Math.abs(q1 + r1 - q2 - r2) + Math.abs(r1 - r2)) / 2;
+        return (Math.abs(q1 - q2) + Math.abs(q1 + startY - q2 - targetY) + Math.abs(startY - targetY)) / 2;
     }
 
     public Set<Tile> calculateBonusRange(Tile centerTile, int radius) {
@@ -82,13 +75,24 @@ public class GameLogic {
         }
         return powerTiles;
     }
-    public boolean  hasEnemyInAttackRange(Set<Tile> attackable){
+    public boolean hasEnemyInAttackRange(Set<Tile> tiles){
 
-        for (Tile tile : attackable) {
-            if (gameState.isOccupied(tile)) {
+        for (Tile tile : tiles) {
+            if (gameState.isOccupied(tile) && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
                 return true;
             }
         }
         return false;
     }
+    public boolean hasFriendlyInRange(Set<Tile> tiles){
+
+        for (Tile tile : tiles) {
+            if (gameState.isOccupied(tile) && gameState.isMinionOwnedByCurrentPlayer(tile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

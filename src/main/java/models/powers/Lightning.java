@@ -1,20 +1,7 @@
 package models.powers;
 
 public class Lightning extends Power {
-    private final String effect;
-    private final int effectValue;
-
     public Lightning(String type, String name, int radius, int value, String effect, int effectValue) {
-        super(type,name, radius, value);
-        this.effect = effect;
-        this.effectValue = effectValue;
-    }
-    // Getters voor effect en effectValue
-    public String getEffect() {
-        return effect;
-    }
-
-    public int getEffectValue() {
-        return effectValue;
+        super(type, name, radius, value, effect, effectValue);
     }
 }
