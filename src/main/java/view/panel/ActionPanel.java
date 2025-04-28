@@ -1,5 +1,4 @@
 package view.panel;
-
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -14,7 +13,6 @@ import models.powers.Power;
 import models.parsers.PowerParser;
 import view.images.ImageLoader;
 import view.button.StatBoxFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -289,7 +287,9 @@ public class ActionPanel {
         powerButtons.forEach(btn -> {
             btn.getStyleClass().remove("selected");
             Power power = (Power) btn.getUserData();
-            if (power == gameState.getSelectedPower()) {
+            if (gameState.getPowerUsed() >= 2) {
+                btn.getStyleClass().add("unaffordable");
+            }else if (power == gameState.getSelectedPower()) {
                 btn.getStyleClass().add("selected");
             }
         });

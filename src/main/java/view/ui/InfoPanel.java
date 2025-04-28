@@ -127,16 +127,16 @@ public class InfoPanel {
                 HBox nameEffect = new HBox();
                 nameEffect.setAlignment(Pos.CENTER_LEFT);
                 Label effectName = new Label(effect.getName());
-                effectName.setFont(Font.font("System", FontWeight.BOLD, 15));
+                effectName.setFont(Font.font("System", FontWeight.BOLD, 20));
+                effectName.setMinWidth(250);
                 nameEffect.getChildren().add(effectName);
                 System.out.println(effect.getName());
 
                 // Duration
                 HBox durationBox = new HBox();
-                durationBox.setMinWidth(225);
                 durationBox.setAlignment(Pos.CENTER_RIGHT);
                 Label durationLabel = new Label("nog " + effect.getDuration() + " beurten");
-                durationLabel.setFont(Font.font("System", FontWeight.BOLD, 15));
+                durationLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
                 durationBox.getChildren().add(durationLabel);
 
                 effectContainer.getChildren().addAll(nameEffect, durationBox);
@@ -180,15 +180,6 @@ public class InfoPanel {
         hbox.getChildren().addAll(imageView, textBox);
 
         return hbox;
-    }
-
-    public void generateEffectInfo(Tile tile) {
-        // Tile info opbouw
-    }
-
-    public void updateLabelBox(VBox labelBox, HBox content) {
-        labelBox.getChildren().clear();
-        labelBox.getChildren().add(content);
     }
 }
 

@@ -4,8 +4,6 @@ import models.grond.Tile;
 import models.minions.Minion;
 import models.parsers.EffectParser;
 import models.powers.Power;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,8 @@ public class GameState {
     private List<Tile> tiles;
     private List<Effect> allEffects;
     private Power selectedPower = null;
-
+    private int hasUsedPower1 = 0;
+    private int hasUsedPower2 = 0;
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
         this.speler1Naam = speler1Naam;
@@ -153,6 +152,10 @@ public class GameState {
         return null;
     }
 
+    public boolean remainOne(){
+        return isSpeler1AanZet ? speler1Minions.size() == 1 : speler2Minions.size() == 1;
+    }
+
     public Effect findEffectByName(String effectName) {
         for (Effect effect : allEffects) {
             if (effect.getType().equalsIgnoreCase(effectName)) {
@@ -160,6 +163,18 @@ public class GameState {
             }
         }
         return null;
+    }
+
+    public void powerUse(){
+        if(isSpeler1AanZet){
+            hasUsedPower1 += 1;
+        }else {
+            hasUsedPower2 += 1;
+        }
+    }
+
+    public int getPowerUsed(){
+        return isSpeler1AanZet ? hasUsedPower1 : hasUsedPower2;
     }
 
     public Power getSelectedPower() {
