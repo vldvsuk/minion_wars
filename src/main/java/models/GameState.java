@@ -1,12 +1,12 @@
 package models;
+import javafx.scene.shape.Polygon;
 import models.effects.Effect;
 import models.grond.Tile;
 import models.minions.Minion;
 import models.parsers.EffectParser;
 import models.powers.Power;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 
 public class GameState {
@@ -14,6 +14,7 @@ public class GameState {
     private final Map<Tile, Minion> speler2Minions = new HashMap<>();
     private Minion selectedMinion;
     private Tile selectedTile;
+    private Polygon currentlySelectedHex = null;
     private boolean isSpeler1AanZet = true;
     private int speler1Coins;
     private int speler2Coins;
@@ -27,6 +28,8 @@ public class GameState {
     private int hasUsedPower1 = 0;
     private int hasUsedPower2 = 0;
     private boolean powerIsUsed = false;
+    private final Set<Minion> processedMinions = new HashSet<>();
+
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
         this.speler1Naam = speler1Naam;
@@ -189,5 +192,21 @@ public class GameState {
     }
     public boolean getPowerBoolean() {
         return powerIsUsed;
+    }
+
+    public void addProcessedMinion(Minion minion) {
+        processedMinions.add(minion);
+    }
+    public Set<Minion> getProcessedMinions() {
+        return processedMinions;
+    }
+    public void resetProcessedMinions() {
+        processedMinions.clear();
+    }
+    public void setCurrentlySelectedHex(Polygon hex) {
+        currentlySelectedHex = hex;
+    }
+    public Polygon getCurrentlySelectedHex() {
+        return currentlySelectedHex;
     }
 }

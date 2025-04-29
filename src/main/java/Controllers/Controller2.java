@@ -28,6 +28,7 @@ import models.powers.Power;
 import view.button.MinionButtonFactory;
 import view.hexagon.HexagonData;
 import view.hexagon.HexagonFactory;
+import view.hexagon.TileManager;
 import view.images.ImageLoader;
 import view.images.ImagePatternHelper;
 import view.panel.ActionPanel;
@@ -41,19 +42,18 @@ public class Controller2 {
     private MinionButtonFactory buttonFactory;
     private HexagonFactory hexagonFactory;
     private InfoPanel infoPanel;
+    private TileManager tileManager;
     private String currentTab = "Bewegen";
     private Set<Tile> attackableTiles = new HashSet<>();
     private Set<Tile> reachableTiles = new HashSet<>();
     private Set<Tile> powerTiles = new HashSet<>();
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
-    private Polygon currentlySelectedHex = null;
     private Tile currentlySelectedTile = null;
     private boolean hasMoved = false;
     private boolean hasAttacked = false;
     private Minion currentMinion = null;
     private int minionsProcessedThisTurn = 0;
-    private final Set<Minion> processedMinions = new HashSet<>();
     private VBox labelBox;
     private boolean basisAttacked = false;
     private boolean specialAttack = false;
@@ -80,6 +80,33 @@ public class Controller2 {
         setupCoinImage();
         setupSplitPane();
         setupKeyListener();
+    }
+
+    public void setInfo(String speler1, String speler2, int munten) {
+        FieldParser fieldParser = new FieldParser();
+        List<Tile> tiles = fieldParser.parseField();
+
+        this.gameState = new GameState(speler1, speler2, munten, tiles);
+        this.gameLogic = new GameLogic(gameState);
+        this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
+        this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
+        this.tileManager = new TileManager(gameState, hexList);
+        this.infoPanel = new InfoPanel(gameState);
+        this.actionPanel = new ActionPanel(
+                gameState,
+                this::handleStayAction,
+                this::handleBasicAttack,
+                this::handleHeal,
+                this::onSpecialAttackAction,
+                this::handlePowerSelect,
+                this::handleTabChange
+
+        );
+
+        updateUI();
+        createMinionButtons();
+        createHexagons(tiles);
+        tileManager.markHomebases();
     }
 
     private void setupCoinImage() {
@@ -124,7 +151,7 @@ public class Controller2 {
 
     private void handleHoverEnd() {
         if (gameState.getSelectedPower() != null) {
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
         }
     }
 
@@ -142,13 +169,13 @@ public class Controller2 {
         gameState.switchPlayer();
         gameState.setSelectedMinion(null);
         gameState.setSelectedTile(null);
-        currentlySelectedHex = null;
+        gameState.setCurrentlySelectedHex(null);
         currentlySelectedTile = null;
         positionViewportForPlayer();
         updateUI();
-        processedMinions.clear();
-        resetAllOverlays();
-        markHomebases();
+        gameState.resetProcessedMinions();
+        tileManager.resetAllOverlays();
+        tileManager.markHomebases();
         currentTab = "Bewegen";
 
         if (!gameState.isPlacementPhase()){
@@ -172,65 +199,6 @@ public class Controller2 {
 
     }
 
-    private void resetAllOverlays() {
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Tile tile = data.getTile();
-            Polygon overlay = data.getOverlay();
-
-            if (tile != gameState.getSelectedTile()) {
-                overlay.setFill(Color.TRANSPARENT);
-                overlay.setOpacity(0.7);
-                overlay.setStrokeWidth(1.5);
-                overlay.setStroke(Color.BLACK);
-            }
-
-            if (!gameState.isPlacementPhase()) {
-                if (gameState.isOccupied(tile)) {
-                    overlay.setStrokeWidth(4);
-                    if(processedMinions.contains(gameState.getPlacedMinion(tile))) {
-                        overlay.setStroke(Color.BLUE);
-                    }else{
-
-                        overlay.setStroke(gameState.isMinionOwnedByCurrentPlayer(tile)
-                                ? Color.GREEN
-                                : Color.RED);
-                    }
-                }
-            } else  {
-                overlay.setStrokeWidth(1.5);
-                overlay.setStroke(Color.BLACK);
-            }
-        }
-    }
-
-
-    public void setInfo(String speler1, String speler2, int munten) {
-        FieldParser fieldParser = new FieldParser();
-        List<Tile> tiles = fieldParser.parseField();
-
-        this.gameState = new GameState(speler1, speler2, munten, tiles);
-        this.gameLogic = new GameLogic(gameState);
-        this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
-        this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
-        this.infoPanel = new InfoPanel(gameState);
-        this.actionPanel = new ActionPanel(
-                gameState,
-                this::handleStayAction,
-                this::handleBasicAttack,
-                this::handleHeal,
-                this::onSpecialAttackAction,
-                this::handlePowerSelect,
-                this::handleTabChange
-
-        );
-
-        updateUI();
-        createMinionButtons();
-        createHexagons(tiles);
-        markHomebases();
-    }
-
     private void updateUI() {
         uiManager.updateUI();
 
@@ -241,10 +209,10 @@ public class Controller2 {
 
         }else{
             updateButtonStates();
-            markHomebases();
+            tileManager.markHomebases();
         }
 
-        updateMinionVisibility();
+        tileManager.updateMinionVisibility();
 
     }
 
@@ -280,7 +248,7 @@ public class Controller2 {
         Minion clickedMinion = gameState.getPlacedMinion(tile);
 
         if (!gameState.isPlacementPhase()) {
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
             if (clickedMinion != null) {
                 labelBox.getChildren().clear();
                 VBox nieuweVBox = infoPanel.generateMinionInfo(tile, clickedMinion);
@@ -296,11 +264,11 @@ public class Controller2 {
         }
 
         if (minionsProcessedThisTurn >= totalProcessed) {
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
             return;
         }
 
-        if (clickedMinion != null && processedMinions.contains(clickedMinion)) return;
+        if (clickedMinion != null && gameState.getProcessedMinions().contains(clickedMinion)) return;
 
         if (currentMinion == null) {
             currentMinion = clickedMinion;
@@ -362,11 +330,11 @@ public class Controller2 {
 
                     if (defender.getCurrentDefence() <= 0) {
                         gameState.removeMinion(tile);
-                        resetTileVisual(tile);
+                        tileManager.resetTileVisual(tile);
                     }
 
                     if (hasMoved) {
-                        processedMinions.add(attacker);
+                        gameState.addProcessedMinion(attacker);
                         minionsProcessedThisTurn++;
                     }
 
@@ -376,7 +344,7 @@ public class Controller2 {
                     updateMinionCountLabel();
                     checkTurnCompletion();
                     checkVoorSpelEinde();
-                    resetAllOverlays();
+                    tileManager.resetAllOverlays();
                 }
                 return;
             }
@@ -391,11 +359,11 @@ public class Controller2 {
                     currentlySelectedTile = tile;
                     selectTile(tile, overlayHex);
                 }else if (currentlySelectedTile == tile){
-                    resetAllOverlays();
+                    tileManager.resetAllOverlays();
                     labelBox.getChildren().clear();
                     currentlySelectedTile = null;
                 }else{
-                    resetAllOverlays();
+                    tileManager.resetAllOverlays();
                     selectTile(tile, overlayHex);
                     currentlySelectedTile = tile;
                 }
@@ -408,17 +376,17 @@ public class Controller2 {
 
         // Reset previous selection
         currentlySelectedTile = null;
-        if (currentlySelectedHex != null) {
-            HexagonData prevData = (HexagonData) currentlySelectedHex.getUserData();
+        if (gameState.getCurrentlySelectedHex() != null) {
+            HexagonData prevData = (HexagonData) gameState.getCurrentlySelectedHex().getUserData();
             prevData.getOverlay().setFill(Color.TRANSPARENT);
             prevData.getOverlay().setOpacity(0);
         }
 
-        if (currentlySelectedHex == hex) {
-            currentlySelectedHex = null;
+        if (gameState.getCurrentlySelectedHex() == hex) {
+            gameState.setCurrentlySelectedHex(null);
             gameState.setSelectedTile(null);
             if (!gameState.isPlacementPhase()) {
-                resetAllOverlays();
+                tileManager.resetAllOverlays();
                 labelBox.getChildren().clear();
             }
             return;
@@ -429,13 +397,13 @@ public class Controller2 {
                 placeMinion(tile, hex);
             } else if (gameState.isOccupied(tile) && gameState.isMinionOwnedByCurrentPlayer(tile)) {
                 selectMinion(tile, overlayHex);
-                currentlySelectedHex = hex;
+                gameState.setCurrentlySelectedHex(hex);
             }
 
         } else if (gameState.isOccupied(tile)) {
             if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
                 selectMinion(tile, overlayHex);
-                currentlySelectedHex = hex;
+                gameState.setCurrentlySelectedHex(hex);
             }
         }
     }
@@ -445,7 +413,7 @@ public class Controller2 {
         gameState.setPowerBoolean(true);
         gameState.powerUse();
         actionPanel.updatePowerButtonsStyle();
-        resetAllOverlays();
+        tileManager.resetAllOverlays();
         checkVoorSpelEinde();
     }
 
@@ -453,11 +421,9 @@ public class Controller2 {
     private void selectTile(Tile tile, Polygon overlayHex) {
         gameState.setSelectedTile(null);
         if (!gameState.isPlacementPhase()) {
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
         }
-        overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
-        overlayHex.setOpacity(0.7);
-        overlayHex.setStroke(Color.GREEN);
+        tileManager.markSelected(overlayHex);
         if (!gameState.isPlacementPhase()) {
             labelBox.getChildren().clear();
             HBox nieuweHBox = infoPanel.generateTileInfo(tile);
@@ -477,23 +443,19 @@ public class Controller2 {
         }
 
         gameState.placeMinion(tile, kopie);
-        currentlySelectedHex = null;
+        gameState.setCurrentlySelectedHex(null);
         updateUI();
 
     }
 
     private void selectMinion(Tile tile, Polygon overlayHex) {
        if (!gameState.isPlacementPhase()){
-           resetAllOverlays();
+           tileManager.resetAllOverlays();
        }
 
         if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
             gameState.setSelectedTile(tile);
-
-            overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
-            overlayHex.setOpacity(0.7);
-            overlayHex.setStroke(Color.GREEN);
-
+            tileManager.markSelected(overlayHex);
             if (!gameState.isPlacementPhase()) {
                 Minion minion = gameState.getPlacedMinion(tile);
 
@@ -509,43 +471,6 @@ public class Controller2 {
         }
     }
 
-
-    private void markHomebases() {
-        if (!gameState.isPlacementPhase()) return;
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Tile tile = data.getTile();
-            Polygon overlayHex = data.getOverlay();
-
-            if (hex == currentlySelectedHex) continue;
-            // Reset overlay
-            overlayHex.setFill(Color.TRANSPARENT);
-            overlayHex.setOpacity(0);
-            overlayHex.setStroke(Color.BLACK);
-            overlayHex.setStrokeWidth(1.5);
-
-            if (gameState.isPlacementPhase()) {
-                if (gameState.isOccupied(tile)) {
-                    if (!gameState.isMinionOwnedByCurrentPlayer(tile)) {
-                        overlayHex.setFill(Color.RED);
-                        overlayHex.setOpacity(0.4);
-                    }
-                } else {
-                    overlayHex.setFill(gameState.isSpeler1AanZet() ?
-                            (tile.getHomebase() == 1 ? Color.YELLOW : Color.RED) :
-                            (tile.getHomebase() == 2 ? Color.YELLOW : Color.RED));
-                    overlayHex.setOpacity(0.4);
-                }
-            } else {
-                if (hex == currentlySelectedHex && gameState.isOccupied(tile) &&
-                        gameState.isMinionOwnedByCurrentPlayer(tile)) {
-                    overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
-                    overlayHex.setOpacity(0.5);
-                }
-            }
-        }
-    }
-
     private void handleKeyPress(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE && gameState.isPlacementPhase()) {
             Tile selectedTile = gameState.getSelectedTile();
@@ -553,76 +478,15 @@ public class Controller2 {
             if (selectedTile != null && gameState.isOccupied(selectedTile)) {
                 Minion removedMinion = gameState.getPlacedMinion(selectedTile);
                 gameState.refundCoins(removedMinion.getCost());
-                resetTileVisual(selectedTile);
+                tileManager.resetTileVisual(selectedTile);
                 gameState.removeMinion(selectedTile);
                 gameState.setSelectedTile(null);
-                currentlySelectedHex = null;
+                gameState.setCurrentlySelectedHex(null);
                 updateUI();
                 event.consume();
             }
         }
     }
-
-    private void resetTileVisual(Tile tile) {
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            if (data.getTile().equals(tile)) {
-                try {
-                    hex.setFill(ImagePatternHelper.createTilePattern(tile.getType().toLowerCase()));
-                } catch (Exception e) {
-                    hex.setFill(Color.LIGHTGRAY);
-                }
-                // Reset overlay
-                data.getOverlay().setFill(Color.TRANSPARENT);
-                data.getOverlay().setOpacity(0);
-                data.getOverlay().setStroke(Color.BLACK);
-                data.getOverlay().setStrokeWidth(1.5);
-                data.getOverlay().setStyle("");
-                markHomebases();
-                break;
-            }
-        }
-    }
-
-    private void updateMinionVisibility() {
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Tile tile = data.getTile();
-
-            if (gameState.isOccupied(tile)) {
-                if (gameState.isPlacementPhase()) {
-                    boolean showMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
-                    if (showMinion) {
-                        Minion minion = gameState.getPlacedMinion(tile);
-                        try {
-                            hex.setFill(ImagePatternHelper.createMinionPattern(minion.getType()));
-                        } catch (Exception e) {
-                            hex.setFill(Color.RED);
-                        }
-                    } else {
-                        resetTileToOriginal(hex, tile);
-                    }
-                } else {
-                    // Show all minions na placement
-                    Minion minion = gameState.getPlacedMinion(tile);
-                    try {
-                        hex.setFill(ImagePatternHelper.createMinionPattern(minion.getType()));
-                    } catch (Exception e) {
-                        hex.setFill(Color.RED);
-                    }
-                }
-            }
-        }
-    }
-
-    private void resetTileToOriginal(Polygon hex, Tile tile) {
-        try {
-            hex.setFill(ImagePatternHelper.createTilePattern(tile.getType().toLowerCase()));
-        } catch (Exception e) {
-            hex.setFill(Color.LIGHTGRAY);
-        }
-    }
-
     private void positionViewportForPlayer() {
         if (gameScrollPane != null) {
             Platform.runLater(() -> {
@@ -671,14 +535,14 @@ public class Controller2 {
         if (gameState.getSelectedTile() != null) {
             Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
             if (hasAttacked) {
-                processedMinions.add(minion);
+                gameState.addProcessedMinion(minion);
                 minionsProcessedThisTurn++;
                 currentMinion = null;
             }
             hasMoved = true;
             updateMinionCountLabel();
-            resetAllOverlays();
-            currentlySelectedHex = null;
+            tileManager.resetAllOverlays();
+            gameState.setCurrentlySelectedHex(null);
             checkTurnCompletion();
             updateActionButtonsState();
         }
@@ -686,7 +550,7 @@ public class Controller2 {
 
     private void handleBasicAttack() {
         gameState.setSelectedPower(null);
-        resetAllOverlays();
+        tileManager.resetAllOverlays();
         basisAttacked = true;
         specialAttack = false;
         highlightAttackRange();
@@ -705,14 +569,14 @@ public class Controller2 {
                 minion.setHealCount(minion.getHealCount() + 1);
 
                 if (hasMoved) {
-                    processedMinions.add(minion);
+                    gameState.addProcessedMinion(minion);
                     minionsProcessedThisTurn++;
                     currentMinion = null;
                 }
                 hasAttacked = true;
-                currentlySelectedHex = null;
+                gameState.setCurrentlySelectedHex(null);
                 updateMinionCountLabel();
-                resetAllOverlays();
+                tileManager.resetAllOverlays();
                 checkTurnCompletion();
                 updateActionButtonsState();
             }
@@ -737,7 +601,7 @@ public class Controller2 {
         if (gameState.getSelectedTile() != null) {
             Tile tile = gameState.getSelectedTile();
             Minion minion = gameState.getPlacedMinion(tile);
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
             if (minion != null) {
                 if ("Bewegen".equals(currentTab) && !hasMoved) {
                     reachableTiles = gameLogic.calculateMovementRange(tile, minion.getCurrentMovement());
@@ -766,9 +630,8 @@ public class Controller2 {
 
         coinsHBox.getChildren().clear();
         coinsHBox.getChildren().addAll(minionIcon, minionCountLabel);
-
-
     }
+
     private void setupActionButtons() {
         // Verwijder bestaande button
         HBox buttonContainer = (HBox) beurtButton.getParent();
@@ -790,11 +653,11 @@ public class Controller2 {
         Tile tile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(tile);
 
-        if (minion != null && !processedMinions.contains(minion)) {
+        if (minion != null && !gameState.getProcessedMinions().contains(minion)) {
             hasAttacked = true;
             if (hasMoved) {
                 minionsProcessedThisTurn++;
-                processedMinions.add(minion);
+                gameState.addProcessedMinion(minion);
             }
             if (minion.isSpecialAttackUsed()){
                 // Als 2 keer gerust, reset speciale aanval
@@ -807,7 +670,7 @@ public class Controller2 {
 
         }
         if ("Aanvallen".equals(currentTab)) {
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
         }
 
         updateMinionCountLabel();
@@ -825,9 +688,9 @@ public class Controller2 {
             };
 
             if (hasValidTarget) {
-                highlightTiles(powerTiles, Color.BLUE);
+                tileManager.highlightTiles(powerTiles, Color.BLUE);
             } else {
-                highlightTiles(powerTiles, Color.GREEN);
+                tileManager.highlightTiles(powerTiles, Color.GREEN);
             }
 
     }
@@ -841,11 +704,11 @@ public class Controller2 {
         gameState.removeMinion(originalTile);
         gameState.placeMinion(targetTile, minion);
         // Update visuals
-        resetTileVisual(originalTile);
-        updateMinionVisual(targetTile, minion);
+        tileManager.resetTileVisual(originalTile);
+        tileManager.updateMinionVisual(targetTile, minion);
 
         if(hasAttacked){
-            processedMinions.add(minion);
+            gameState.addProcessedMinion(minion);
             minionsProcessedThisTurn++;
             currentMinion = null;
         }
@@ -853,54 +716,18 @@ public class Controller2 {
 
         // Reset selection
         reachableTiles.clear();
-        resetAllOverlays();
+        tileManager.resetAllOverlays();
         updateActionButtonsState();
         updateMinionCountLabel();
         checkTurnCompletion();
 
     }
-
-    private void updateMinionVisual(Tile tile, Minion minion) {
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            if (data.getTile().equals(tile)) {
-                try {
-                    hex.setFill(ImagePatternHelper.createMinionPattern(minion.getType()));
-                } catch (Exception e) {
-                    hex.setFill(Color.RED);
-                }
-                break;
-            }
-        }
-    }
-
-    private void highlightTiles(Set<Tile> tiles, Color color) {
-        for (Polygon hex : hexList) {
-            HexagonData data = (HexagonData) hex.getUserData();
-            Polygon overlay = data.getOverlay();
-            Tile tile = data.getTile();
-
-            if (gameState.getSelectedTile() == tile){
-                overlay.setFill(Color.rgb(255, 255, 11, 0.3));
-                overlay.setOpacity(0.7);
-                overlay.setStroke(Color.GREEN);
-
-            } else if (tiles.contains(data.getTile())) {
-                overlay.setFill(color);
-                overlay.setOpacity(0.4);
-            } else  {
-                overlay.setFill(Color.TRANSPARENT);
-            }
-
-        }
-    }
-
     private void highlightReachableTiles() {
-        highlightTiles(reachableTiles, Color.GREEN);
+        tileManager.highlightTiles(reachableTiles, Color.GREEN);
     }
 
     private void highlightAttackRange() {
-        highlightTiles(attackableTiles, Color.RED);
+        tileManager.highlightTiles(attackableTiles, Color.RED);
     }
 
     private void checkVoorSpelEinde() {
@@ -938,9 +765,9 @@ public class Controller2 {
     private void checkTurnCompletion() {
         if (minionsProcessedThisTurn >= totalProcessed) {
             beurtButton.setDisable(false);
-            resetAllOverlays();
+            tileManager.resetAllOverlays();
             gameState.setSelectedTile(null);
-            currentlySelectedHex = null;
+            gameState.setCurrentlySelectedHex(null);
             currentMinion = null;
         }
     }
@@ -975,7 +802,7 @@ public class Controller2 {
                 }
                 if (minion.getCurrentDefence() <= 0) {
                     gameState.removeMinion(tile);
-                    resetTileVisual(tile);
+                    tileManager.resetTileVisual(tile);
                     checkVoorSpelEinde();
                 }
             }
@@ -1026,14 +853,11 @@ public class Controller2 {
                     }
                     if (minion.getCurrentDefence() <= 0) {
                         gameState.removeMinion(tile);
-                        resetTileVisual(tile);
+                        tileManager.resetTileVisual(tile);
                         checkVoorSpelEinde();
                     }
-
                 }
             }
         }
     }
-
-
 }
