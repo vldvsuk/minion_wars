@@ -6,6 +6,7 @@ import models.GameState;
 import models.effects.Effect;
 import models.grond.Tile;
 import models.minions.Minion;
+import models.powers.Power;
 import view.hexagon.TileManager;
 
 import java.util.Set;
@@ -13,13 +14,11 @@ import java.util.Set;
 public class ActionController {
 
     private final GameState gameState;
-    private final GameLogic gameLogic;
     private final TileManager tileManager;
     private GameActions actions;
 
-    public ActionController(GameState gameState, GameLogic gameLogic, TileManager tileManager) {
+    public ActionController(GameState gameState, TileManager tileManager) {
         this.gameState = gameState;
-        this.gameLogic = gameLogic;
         this.tileManager = tileManager;
         this.actions = gameState.getGameActions();
     }
@@ -89,11 +88,7 @@ public class ActionController {
                     }
                 }
             }
-
-            if (defender.getCurrentDefence() <= 0) {
-                gameState.removeMinion(tile);
-                tileManager.resetTileVisual(tile);
-            }
+            checkMinionDefeated(tile, defender);
 
             if (actions.hasMoved()) {
                 gameState.addProcessedMinion(attacker);
@@ -104,8 +99,57 @@ public class ActionController {
             tileManager.resetAllOverlays();
         }
     }
-    public void handlePower(Set<Tile> powerTiles) {
 
+    public void handlePower(Set<Tile> powerTiles) {
+        Power power = gameState.getSelectedPower();
+        if (power == null) return;
+
+        for (Tile tile : powerTiles) {
+            boolean isOwnMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
+
+            if (!gameState.isOccupied(tile)) continue;
+
+            Minion minion = gameState.getPlacedMinion(tile);
+            applyPowerEffects(power, minion, isOwnMinion);
+            checkMinionDefeated(tile, minion);
+        }
+    }
+
+    private void applyPowerEffects(Power power, Minion minion, boolean isOwnMinion) {
+        // Schade/heal toepassen
+        if (!isOwnMinion && !power.getType().equalsIgnoreCase("healing")) {
+            minion.verminderCurrentDefence(power.getValue());
+        } else if (isOwnMinion && power.getType().equalsIgnoreCase("healing")) {
+            minion.setCurrentDefence(Math.min(
+                    minion.getCurrentDefence() + power.getValue(),
+                    minion.getDefence()
+            ));
+        }
+
+        // Effecten toepassen
+        if (power.hasEffect() && !isOwnMinion) {
+            applyPowerEffect(power, minion);
+        }
+    }
+
+    private void applyPowerEffect(Power power, Minion minion) {
+        Effect effect = gameState.findEffectByName(power.getEffect());
+        if (effect != null) {
+            Effect appliedEffect = new Effect(
+                    effect.getType(),
+                    effect.getName(),
+                    effect.getDuration(),
+                    power.getEffectValue() != 0 ? power.getEffectValue() : effect.getValue()
+            );
+            minion.addEffect(appliedEffect);
+        }
+    }
+
+    private void checkMinionDefeated(Tile tile, Minion minion) {
+        if (minion.getCurrentDefence() <= 0) {
+            gameState.removeMinion(tile);
+            tileManager.resetTileVisual(tile);
+        }
     }
 }
 

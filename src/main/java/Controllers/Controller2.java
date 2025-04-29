@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import models.GameActions;
 import models.GameLogic;
 import models.GameState;
-import models.effects.Effect;
 import models.minions.Minion;
 import models.parsers.FieldParser;
 import models.parsers.MinionParser;
@@ -46,10 +45,11 @@ public class Controller2 {
     private ButtonManager buttonManager;
     private EffectProcessor effectProcessor;
     private ActionController actionController;
+    private UIController uiController;
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
     private VBox labelBox;
-    int totalProcessed = 2;
+    public int totalProcessed = 2;
 
     @FXML private SplitPane splitPane;
     @FXML private Label naamLabel;
@@ -84,7 +84,8 @@ public class Controller2 {
         this.infoPanel = new InfoPanel(gameState);
         this.actions = gameState.getGameActions();
         this.effectProcessor = new EffectProcessor(gameState,tileManager);
-        this.actionController = new ActionController(gameState, gameLogic, tileManager);
+        this.actionController = new ActionController(gameState, tileManager);
+        this.uiController = new UIController(gameState, uiManager, infoPanel);
         this.actionPanel = new ActionPanel(
                 gameState,
                 this::handleStayAction,
@@ -333,7 +334,7 @@ public class Controller2 {
     }
 
     private void handleBonus() {
-        applyPower();
+        actionController.handlePower(actions.getPowerTiles());
         gameState.setSelectedPower(null);
         gameState.setPowerBoolean(true);
         gameState.powerUse();
@@ -616,42 +617,6 @@ public class Controller2 {
         }
     }
 
-    private void applyPower() {
-
-        for (Tile tile : actions.getPowerTiles()) {
-            boolean isOwnMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
-
-            Power power = gameState.getSelectedPower();
-            if (gameState.isOccupied(tile)) {
-                Minion minion = gameState.getPlacedMinion(tile);
-                if (!isOwnMinion && !power.getType().equals("healing")){
-                    minion.verminderCurrentDefence(power.getValue());  //de schade doen
-
-                } else if (isOwnMinion && power.getType().equals("healing")){   //heal van eigen minion
-                    minion.setCurrentDefence(Math.min(
-                            minion.getCurrentDefence() + power.getValue(),
-                            minion.getDefence()
-                    ));
-                }
-                if (power.hasEffect() && !isOwnMinion) {
-                    Effect effect = gameState.findEffectByName(power.getEffect());
-                    Effect appliedEffect = new Effect(
-                            effect.getType(),
-                            effect.getName(),
-                            effect.getDuration(),
-                            power.getEffectValue() != 0 ? power.getEffectValue() : effect.getValue()
-                    );
-                    minion.addEffect(appliedEffect);
-                }
-                if (minion.getCurrentDefence() <= 0) {
-                    gameState.removeMinion(tile);
-                    tileManager.resetTileVisual(tile);
-                    checkVoorSpelEinde();
-                }
-            }
-        }
-
-    }
     private void updateActionButtonsState() {
         buttonManager.updateButtons(actions.getAttackableTiles());
     }
