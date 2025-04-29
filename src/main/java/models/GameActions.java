@@ -14,6 +14,8 @@ public class GameActions {
     private Set<Tile> attackableTiles = new HashSet<>();
     private Set<Tile> reachableTiles = new HashSet<>();
     private Set<Tile> powerTiles = new HashSet<>();
+    private String currentTab = "Bewegen";
+    private int minionProcessed = 0;
 
     // Getters en setters
     public boolean hasMoved() { return hasMoved; }
@@ -50,10 +52,10 @@ public class GameActions {
     public void clearPowerTiles() {
         powerTiles.clear();
     }
-    public void resetMovementTiles() {
-        reachableTiles.clear();
-        attackableTiles.clear();
-    }
+    public String getCurrentTab() { return currentTab; }
+    public void setCurrentTab(String currentTab) { this.currentTab = currentTab; }
+    public int getMinionProcessed() { return minionProcessed; }
+    public void oneMoreMinionProcessed() { minionProcessed++; }
 
     public void resetActions() {
         hasMoved = false;
@@ -63,6 +65,8 @@ public class GameActions {
         powerTiles.clear();
         attackableTiles.clear();
         reachableTiles.clear();
+        currentTab = "Bewegen";
+        minionProcessed = 0;
     }
 }
 

@@ -45,10 +45,9 @@ public class Controller2 {
     private GameActions actions;
     private ButtonManager buttonManager;
     private EffectProcessor effectProcessor;
-    private String currentTab = "Bewegen";
+    private ActionController actionController;
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
-    private int minionsProcessedThisTurn = 0;
     private VBox labelBox;
     int totalProcessed = 2;
 
@@ -85,6 +84,7 @@ public class Controller2 {
         this.infoPanel = new InfoPanel(gameState);
         this.actions = gameState.getGameActions();
         this.effectProcessor = new EffectProcessor(gameState,tileManager);
+        this.actionController = new ActionController(gameState, gameLogic, tileManager);
         this.actionPanel = new ActionPanel(
                 gameState,
                 this::handleStayAction,
@@ -106,7 +106,6 @@ public class Controller2 {
 
     @FXML
     private void handleBeurtButton() {
-        currentTab = "Bewegen";
         gameState.switchPlayer();
         gameState.resetBeurtButton();
         gameView.positionViewportForPlayer(gameScrollPane);
@@ -118,7 +117,6 @@ public class Controller2 {
         if (!gameState.isPlacementPhase()){
             totalProcessed = gameState.remainOne()? 1 : 2;
             beurtButton.setDisable(true);
-            minionsProcessedThisTurn = 0;
             actions.resetActions();
             updateMinionCountLabel();
             effectProcessor.processEffects(hexList);
@@ -178,7 +176,7 @@ public class Controller2 {
 
         if (!gameState.isPlacementPhase()) {
             afterPlacement();
-            beurtButton.setDisable(minionsProcessedThisTurn < totalProcessed);
+            beurtButton.setDisable(actions.getMinionProcessed() < totalProcessed);
             updateActionButtonsState();
 
         }else{
@@ -215,6 +213,7 @@ public class Controller2 {
     }
 
     private void handleTileClick(Polygon hex) {
+
         HexagonData data = (HexagonData) hex.getUserData();
         Tile tile = data.getTile();
         Polygon overlayHex = data.getOverlay();
@@ -230,13 +229,12 @@ public class Controller2 {
                 labelBox.setMinHeight(100 + (aantalEffecten * 22));
             }
         }
-
         if (gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2) {
             handleBonus();
             return;
         }
 
-        if (minionsProcessedThisTurn >= totalProcessed) {
+        if (actions.getMinionProcessed() >= totalProcessed) {
             tileManager.resetAllOverlays();
             return;
         }
@@ -255,66 +253,16 @@ public class Controller2 {
         }
         if (!gameState.isPlacementPhase()) {
             //Bewegen
-            if ("Bewegen".equals(currentTab) && gameState.getSelectedTile() != null && actions.getReachableTiles().contains(tile) && !actions.hasMoved()) {
-                moveMinion(tile);
+            if (actionController.canMove(tile)) {
+                actionController.handleMove(tile);
+                updateAfterAction();
                 selectMinion(tile, overlayHex);
                 return;
             }
             // Handle attack
-            else if ("Aanvallen".equals(currentTab)
-                    && gameState.getSelectedTile() != null
-                    && actions.getAttackableTiles().contains(tile)
-                    && gameState.isOccupied(tile)
-                    && !gameState.isMinionOwnedByCurrentPlayer(tile)
-                    && !actions.hasAttacked()
-                    && (actions.isBasisAttacked() || actions.isSpecialAttack())) {
-
-                Minion attacker = gameState.getPlacedMinion(gameState.getSelectedTile());
-                Minion defender = gameState.getPlacedMinion(tile);
-
-                if (attacker != null && defender != null) {
-                    defender.verminderCurrentDefence(attacker.getAttack());
-
-                    if (actions.isSpecialAttack() && attacker.hasSpecialAbility()) {
-                        String effectName = attacker.getEffect();
-                        Effect effect = gameState.findEffectByName(effectName);
-                        attacker.setSpecialAttackUsed(true);
-                        attacker.setRestCount(0);
-                        // effect gevonden
-                        if (effect != null) {
-                            // de kopie
-                            Effect appliedEffect = new Effect(
-                                    effect.getType(),
-                                    effect.getName(),
-                                    effect.getDuration(),
-                                    attacker.getEffectValue() != 0 ? attacker.getEffectValue() : effect.getValue()
-                            );
-                            if ("rage".equals(effect.getType()) || "heal".equals(effect.getType())) {
-                                attacker.addEffect(appliedEffect);
-                            }else {
-                                defender.addEffect(appliedEffect);
-                            }
-                        }
-                    }
-
-                    if (defender.getCurrentDefence() <= 0) {
-                        gameState.removeMinion(tile);
-                        tileManager.resetTileVisual(tile);
-                    }
-
-                    if (actions.hasMoved()) {
-                        gameState.addProcessedMinion(attacker);
-                        minionsProcessedThisTurn++;
-                    }
-
-                    actions.setHasAttacked(true);
-                    gameState.setCurrentMinion(null);
-
-                    updateMinionCountLabel();
-                    checkTurnCompletion();
-                    checkVoorSpelEinde();
-                    tileManager.resetAllOverlays();
-                }
+            else if (actionController.canAttack(tile)) {
+                    actionController.handleAttack(tile);
+                    updateAfterAction();
                 return;
             }
         }
@@ -376,8 +324,16 @@ public class Controller2 {
             }
         }
     }
+
+    private void updateAfterAction() {
+        updateMinionCountLabel();
+        checkTurnCompletion();
+        updateActionButtonsState();
+        checkVoorSpelEinde();
+    }
+
     private void handleBonus() {
-        applyFireball();
+        applyPower();
         gameState.setSelectedPower(null);
         gameState.setPowerBoolean(true);
         gameState.powerUse();
@@ -485,7 +441,7 @@ public class Controller2 {
             Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
             if (actions.hasAttacked()) {
                 gameState.addProcessedMinion(minion);
-                minionsProcessedThisTurn++;
+                actions.oneMoreMinionProcessed();
                 gameState.setCurrentMinion(null);
             }
             actions.setHasMoved(true);
@@ -519,7 +475,7 @@ public class Controller2 {
 
                 if (actions.hasMoved()) {
                     gameState.addProcessedMinion(minion);
-                    minionsProcessedThisTurn++;
+                    actions.oneMoreMinionProcessed();
                     gameState.setCurrentMinion(null);
                 }
                 actions.setHasAttacked(true);
@@ -545,7 +501,7 @@ public class Controller2 {
     }
 
     private void handleTabChange(String tabTitle) {
-        currentTab = tabTitle;
+        actions.setCurrentTab(tabTitle);
         gameState.setSelectedPower(null);
         if (gameState.getSelectedTile() != null) {
             Tile tile = gameState.getSelectedTile();
@@ -557,10 +513,10 @@ public class Controller2 {
     private void updateTileInteraction(Tile tile, Minion minion) {
         tileManager.resetAllOverlays();
         if (minion != null) {
-            if ("Bewegen".equals(currentTab) && !actions.hasMoved()) {
+            if ("Bewegen".equals(actions.getCurrentTab()) && !actions.hasMoved()) {
                 actions.setReachableTiles(gameLogic.calculateMovementRange(tile, minion.getCurrentMovement()));
                 highlightReachableTiles();
-            } else if ("Aanvallen".equals(currentTab) && !actions.hasAttacked()) {
+            } else if ("Aanvallen".equals(actions.getCurrentTab()) && !actions.hasAttacked()) {
                 actions.setAttackableTiles(gameLogic.calculateAttackRange(tile, minion.getMinRange(), minion.getCurrentMaxRange()));
                 highlightAttackRange();
             }
@@ -574,7 +530,7 @@ public class Controller2 {
         if (minion != null && !gameState.getProcessedMinions().contains(minion)) {
             actions.setHasAttacked(true);
             if (actions.hasMoved()) {
-                minionsProcessedThisTurn++;
+                actions.oneMoreMinionProcessed();
                 gameState.addProcessedMinion(minion);
             }
             if (minion.isSpecialAttackUsed()){
@@ -586,7 +542,7 @@ public class Controller2 {
                 }
             }
         }
-        if ("Aanvallen".equals(currentTab)) {
+        if ("Aanvallen".equals(actions.getCurrentTab())) {
             tileManager.resetAllOverlays();
         }
         updateMinionCountLabel();
@@ -610,29 +566,6 @@ public class Controller2 {
             }
     }
 
-    private void moveMinion(Tile targetTile) {
-        Tile originalTile = gameState.getSelectedTile();
-        Minion minion = gameState.getPlacedMinion(originalTile);
-        gameState.removeMinion(originalTile);
-        gameState.placeMinion(targetTile, minion);
-        // Update visuals
-        tileManager.resetTileVisual(originalTile);
-        tileManager.updateMinionVisual(targetTile, minion);
-
-        if(actions.hasAttacked()){
-            gameState.addProcessedMinion(minion);
-            minionsProcessedThisTurn++;
-            gameState.setCurrentMinion(null);
-        }
-        actions.setHasMoved(true);
-        // Reset selection
-        actions.clearReachableTiles();
-        tileManager.resetAllOverlays();
-        updateActionButtonsState();
-        updateMinionCountLabel();
-        checkTurnCompletion();
-
-    }
     private void highlightReachableTiles() {
         tileManager.highlightTiles(actions.getReachableTiles(), Color.GREEN);
     }
@@ -667,14 +600,14 @@ public class Controller2 {
     }
 
     private void updateMinionCountLabel() {
-        if (minionsProcessedThisTurn<=totalProcessed){
-            minionCountLabel.setText(minionsProcessedThisTurn + "/" + totalProcessed);
+        if (actions.getMinionProcessed()<=totalProcessed){
+            minionCountLabel.setText(actions.getMinionProcessed() + "/" + totalProcessed);
         }
         updateActionButtonsState();
     }
 
     private void checkTurnCompletion() {
-        if (minionsProcessedThisTurn >= totalProcessed) {
+        if (actions.getMinionProcessed() >= totalProcessed) {
             beurtButton.setDisable(false);
             tileManager.resetAllOverlays();
             gameState.setSelectedTile(null);
@@ -683,7 +616,7 @@ public class Controller2 {
         }
     }
 
-    private void applyFireball() {
+    private void applyPower() {
 
         for (Tile tile : actions.getPowerTiles()) {
             boolean isOwnMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
