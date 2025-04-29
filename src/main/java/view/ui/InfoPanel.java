@@ -130,7 +130,6 @@ public class InfoPanel {
                 effectName.setFont(Font.font("System", FontWeight.BOLD, 20));
                 effectName.setMinWidth(250);
                 nameEffect.getChildren().add(effectName);
-                System.out.println(effect.getName());
 
                 // Duration
                 HBox durationBox = new HBox();

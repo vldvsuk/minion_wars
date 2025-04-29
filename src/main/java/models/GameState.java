@@ -5,7 +5,6 @@ import models.grond.Tile;
 import models.minions.Minion;
 import models.parsers.EffectParser;
 import models.powers.Power;
-
 import java.util.*;
 
 
@@ -29,6 +28,7 @@ public class GameState {
     private int hasUsedPower2 = 0;
     private boolean powerIsUsed = false;
     private final Set<Minion> processedMinions = new HashSet<>();
+
 
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
@@ -208,5 +208,12 @@ public class GameState {
     }
     public Polygon getCurrentlySelectedHex() {
         return currentlySelectedHex;
+    }
+    public void resetBeurtButton() {
+        setSelectedPower(null);
+        setPowerBoolean(false);
+        setSelectedMinion(null);
+        setSelectedTile(null);
+        setCurrentlySelectedHex(null);
     }
 }

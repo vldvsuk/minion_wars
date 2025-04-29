@@ -32,6 +32,7 @@ import view.hexagon.TileManager;
 import view.images.ImageLoader;
 import view.images.ImagePatternHelper;
 import view.panel.ActionPanel;
+import view.ui.GameView;
 import view.ui.InfoPanel;
 import view.ui.UIManager;
 
@@ -43,6 +44,7 @@ public class Controller2 {
     private HexagonFactory hexagonFactory;
     private InfoPanel infoPanel;
     private TileManager tileManager;
+    private GameView gameView;
     private String currentTab = "Bewegen";
     private Set<Tile> attackableTiles = new HashSet<>();
     private Set<Tile> reachableTiles = new HashSet<>();
@@ -77,9 +79,6 @@ public class Controller2 {
     public void initialize() {
         if (!hexList.isEmpty()) return;
         hexagonFactory = new HexagonFactory();
-        setupCoinImage();
-        setupSplitPane();
-        setupKeyListener();
     }
 
     public void setInfo(String speler1, String speler2, int munten) {
@@ -91,7 +90,9 @@ public class Controller2 {
         this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
         this.tileManager = new TileManager(gameState, hexList);
+        this.gameView  = new GameView(gameState,tileManager);
         this.infoPanel = new InfoPanel(gameState);
+
         this.actionPanel = new ActionPanel(
                 gameState,
                 this::handleStayAction,
@@ -103,21 +104,17 @@ public class Controller2 {
 
         );
 
+
+
+        setupKeyListener();
+
+        gameView.initializeUI(splitPane,coinImageView);
         updateUI();
         createMinionButtons();
         createHexagons(tiles);
         tileManager.markHomebases();
     }
 
-    private void setupCoinImage() {
-        coinImageView.setImage(ImageLoader.loadCoinIcon());
-    }
-
-    private void setupSplitPane() {
-        splitPane.getDividers().getFirst().positionProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(() -> splitPane.setDividerPositions(0.25));
-        });
-    }
 
     private void createMinionButtons() {
         MinionParser parser = new MinionParser();
@@ -167,11 +164,9 @@ public class Controller2 {
     @FXML
     private void handleBeurtButton() {
         gameState.switchPlayer();
-        gameState.setSelectedMinion(null);
-        gameState.setSelectedTile(null);
-        gameState.setCurrentlySelectedHex(null);
+        gameState.resetBeurtButton();
         currentlySelectedTile = null;
-        positionViewportForPlayer();
+        gameView.positionViewportForPlayer(gameScrollPane);
         updateUI();
         gameState.resetProcessedMinions();
         tileManager.resetAllOverlays();
@@ -187,8 +182,6 @@ public class Controller2 {
             currentMinion = null;
             basisAttacked = false;
             specialAttack = false;
-            gameState.setSelectedPower(null);
-            gameState.setPowerBoolean(false);
             updateMinionCountLabel();
             processEffects();
             actionPanel.updatePowerButtonsStyle();
@@ -487,26 +480,14 @@ public class Controller2 {
             }
         }
     }
-    private void positionViewportForPlayer() {
-        if (gameScrollPane != null) {
-            Platform.runLater(() -> {
-                if (gameState.isSpeler1AanZet()) {
-                    // Naar linksboven
-                    gameScrollPane.setHvalue(0);
-                    gameScrollPane.setVvalue(0);
-                } else {
-                    // Naar rechtsonder
-                    gameScrollPane.setHvalue(1);
-                    gameScrollPane.setVvalue(1);
-                }});
-        }
-    }
-
     private void afterPlacement(){
         removeMinionButtons();
         addCustomVBox();
-        replaceCoinsDisplay();
-        setupActionButtons();
+        minionCountLabel = gameView.makeMinionCountLabel();
+        gameView.replaceCoinsDisplay(minionCountLabel, coinsHBox);
+        rustButton = gameView.makeRustButton();
+        rustButton.setOnAction(e -> handleRustButton());
+        gameView.setupActionButtons(beurtButton,rustButton);
     }
 
     private void removeMinionButtons() {
@@ -616,39 +597,6 @@ public class Controller2 {
         }
     }
 
-
-    private void replaceCoinsDisplay() {
-
-        ImageView minionIcon = new ImageView(ImageLoader.loadUseMinionIcon());
-        minionIcon.setFitHeight(26);
-        minionIcon.setFitWidth(24);
-        minionIcon.setPreserveRatio(true);
-
-        minionCountLabel = new Label("0/2");
-        minionCountLabel.setTextFill(Color.BLUE);
-        minionCountLabel.setFont(Font.font("System Bold Italic", 24));
-
-        coinsHBox.getChildren().clear();
-        coinsHBox.getChildren().addAll(minionIcon, minionCountLabel);
-    }
-
-    private void setupActionButtons() {
-        // Verwijder bestaande button
-        HBox buttonContainer = (HBox) beurtButton.getParent();
-        buttonContainer.getChildren().clear();
-
-        beurtButton.setPrefHeight(35);
-
-        rustButton = new Button("Rust");
-        rustButton.setPrefWidth(80);
-        rustButton.setPrefHeight(35);
-        rustButton.setFont(Font.font("System", FontWeight.BOLD, 15));
-        rustButton.setOnAction(e -> handleRustButton());
-
-        buttonContainer.getChildren().addAll(rustButton, beurtButton);
-        buttonContainer.setSpacing(5);
-    }
-
     private void handleRustButton() {
         Tile tile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(tile);
@@ -667,12 +615,10 @@ public class Controller2 {
                     minion.setRestCount(0);
                 }
             }
-
         }
         if ("Aanvallen".equals(currentTab)) {
             tileManager.resetAllOverlays();
         }
-
         updateMinionCountLabel();
         checkTurnCompletion();
     }
@@ -692,15 +638,11 @@ public class Controller2 {
             } else {
                 tileManager.highlightTiles(powerTiles, Color.GREEN);
             }
-
     }
-
 
     private void moveMinion(Tile targetTile) {
         Tile originalTile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(originalTile);
-
-
         gameState.removeMinion(originalTile);
         gameState.placeMinion(targetTile, minion);
         // Update visuals
@@ -713,7 +655,6 @@ public class Controller2 {
             currentMinion = null;
         }
         hasMoved = true;
-
         // Reset selection
         reachableTiles.clear();
         tileManager.resetAllOverlays();
@@ -789,7 +730,6 @@ public class Controller2 {
                             minion.getDefence()
                     ));
                 }
-
                 if (power.hasEffect()) {
                     Effect effect = gameState.findEffectByName(power.getEffect());
                     Effect appliedEffect = new Effect(
@@ -809,7 +749,6 @@ public class Controller2 {
         }
 
     }
-
 
     private void updateActionButtonsState() {
         if (gameState.isPlacementPhase()) return;
@@ -843,7 +782,6 @@ public class Controller2 {
                 if (effectsToProcess.isEmpty()) {
                     continue;
                 }
-
                 for (Effect effect : effectsToProcess) {
                     effect.verminderDuration();
                     minion.applyEffect(effect);
