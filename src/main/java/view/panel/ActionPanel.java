@@ -287,7 +287,7 @@ public class ActionPanel {
         powerButtons.forEach(btn -> {
             btn.getStyleClass().remove("selected");
             Power power = (Power) btn.getUserData();
-            if (gameState.getPowerUsed() >= 2) {
+            if (gameState.getPowerUsed() >= 2 || gameState.getPowerBoolean()) {
                 btn.getStyleClass().add("unaffordable");
             }else if (power == gameState.getSelectedPower()) {
                 btn.getStyleClass().add("selected");

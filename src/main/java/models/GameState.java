@@ -26,6 +26,7 @@ public class GameState {
     private Power selectedPower = null;
     private int hasUsedPower1 = 0;
     private int hasUsedPower2 = 0;
+    private boolean powerIsUsed = false;
 
     public GameState(String speler1Naam, String speler2Naam, int startCoins, List<Tile> tiles) {
         this.speler1Naam = speler1Naam;
@@ -182,5 +183,11 @@ public class GameState {
     }
     public void setSelectedPower(Power selectedPower) {
         this.selectedPower = selectedPower;
+    }
+    public void setPowerBoolean(boolean powerIsUsed) {
+        this.powerIsUsed = powerIsUsed;
+    }
+    public boolean getPowerBoolean() {
+        return powerIsUsed;
     }
 }

@@ -13,12 +13,13 @@ public class GameLogic {
 
     public Set<Tile> calculateMovementRange(Tile startTile, int movement) {
         Set<Tile> reachable = new HashSet<>();
-        if ("forest".equals(startTile.getType())){
-            movement-=1;
-        }
 
         for (Tile tile : gameState.getTiles()) {
-            if (isValidMoveTarget(startTile, tile, movement)) {
+            if (tile.getType().equals("forest")){
+                if (isValidMoveTarget(startTile, tile, movement - 1)){
+                    reachable.add(tile);
+                }
+            }else if (isValidMoveTarget(startTile, tile, movement)) {
                 reachable.add(tile);
             }
         }

@@ -55,7 +55,6 @@ public class Controller2 {
     private int minionsProcessedThisTurn = 0;
     private final Set<Minion> processedMinions = new HashSet<>();
     private VBox labelBox;
-    private boolean hasUsedBonus = false;
     private boolean basisAttacked = false;
     private boolean specialAttack = false;
     int totalProcessed = 2;
@@ -118,7 +117,7 @@ public class Controller2 {
     }
 
     private void handleHoverStart(Tile hoveredTile) {
-        if (gameState.getSelectedPower() != null && !hasUsedBonus && gameState.getPowerUsed() < 2) {
+        if (gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2) {
             updatePowerRangeVisuals(hoveredTile);
         }
     }
@@ -159,10 +158,10 @@ public class Controller2 {
             hasMoved = false;
             hasAttacked = false;
             currentMinion = null;
-            hasUsedBonus = false;
             basisAttacked = false;
             specialAttack = false;
             gameState.setSelectedPower(null);
+            gameState.setPowerBoolean(false);
             updateMinionCountLabel();
             processEffects();
             actionPanel.updatePowerButtonsStyle();
@@ -291,7 +290,7 @@ public class Controller2 {
             }
         }
 
-        if (gameState.getSelectedPower() != null && !hasUsedBonus && gameState.getPowerUsed() < 2) {
+        if (gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2) {
             handleBonus();
             return;
         }
@@ -443,8 +442,9 @@ public class Controller2 {
     private void handleBonus() {
         applyFireball();
         gameState.setSelectedPower(null);
-        hasUsedBonus = true;
+        gameState.setPowerBoolean(true);
         gameState.powerUse();
+        actionPanel.updatePowerButtonsStyle();
         resetAllOverlays();
         checkVoorSpelEinde();
     }
