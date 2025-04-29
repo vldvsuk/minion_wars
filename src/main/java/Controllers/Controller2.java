@@ -46,9 +46,6 @@ public class Controller2 {
     private ButtonManager buttonManager;
     private EffectProcessor effectProcessor;
     private String currentTab = "Bewegen";
-    private Set<Tile> attackableTiles = new HashSet<>();
-    private Set<Tile> reachableTiles = new HashSet<>();
-    private Set<Tile> powerTiles = new HashSet<>();
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
     private int minionsProcessedThisTurn = 0;
@@ -258,15 +255,15 @@ public class Controller2 {
         }
         if (!gameState.isPlacementPhase()) {
             //Bewegen
-            if ("Bewegen".equals(currentTab) && gameState.getSelectedTile() != null && reachableTiles.contains(tile) && !actions.hasMoved()) {
-                selectMinion(tile, overlayHex);
+            if ("Bewegen".equals(currentTab) && gameState.getSelectedTile() != null && actions.getReachableTiles().contains(tile) && !actions.hasMoved()) {
                 moveMinion(tile);
+                selectMinion(tile, overlayHex);
                 return;
             }
             // Handle attack
             else if ("Aanvallen".equals(currentTab)
                     && gameState.getSelectedTile() != null
-                    && attackableTiles.contains(tile)
+                    && actions.getAttackableTiles().contains(tile)
                     && gameState.isOccupied(tile)
                     && !gameState.isMinionOwnedByCurrentPlayer(tile)
                     && !actions.hasAttacked()
@@ -544,7 +541,7 @@ public class Controller2 {
         }
         // Update UI
         actionPanel.updatePowerButtonsStyle();
-        powerTiles.clear();
+        actions.clearPowerTiles();
     }
 
     private void handleTabChange(String tabTitle) {
@@ -561,14 +558,13 @@ public class Controller2 {
         tileManager.resetAllOverlays();
         if (minion != null) {
             if ("Bewegen".equals(currentTab) && !actions.hasMoved()) {
-                reachableTiles = gameLogic.calculateMovementRange(tile, minion.getCurrentMovement());
+                actions.setReachableTiles(gameLogic.calculateMovementRange(tile, minion.getCurrentMovement()));
                 highlightReachableTiles();
             } else if ("Aanvallen".equals(currentTab) && !actions.hasAttacked()) {
-                attackableTiles = gameLogic.calculateAttackRange(tile, minion.getMinRange(), minion.getCurrentMaxRange());
+                actions.setAttackableTiles(gameLogic.calculateAttackRange(tile, minion.getMinRange(), minion.getCurrentMaxRange()));
                 highlightAttackRange();
             }
         }
-
         updateActionButtonsState();
     }
     private void handleRustButton() {
@@ -598,19 +594,19 @@ public class Controller2 {
     }
 
     private void updatePowerRangeVisuals(Tile centerTile) {
-        powerTiles.clear();
+        actions.clearPowerTiles();
         String powerType = gameState.getSelectedPower().getType().toLowerCase();
-        powerTiles = gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius());
+        actions.setPowerTiles(gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius()));
             boolean hasValidTarget = switch (powerType) {
-                case "healing" -> gameLogic.hasFriendlyInRange(powerTiles);
-                case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(powerTiles);
+                case "healing" -> gameLogic.hasFriendlyInRange(actions.getPowerTiles());
+                case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(actions.getPowerTiles());
                 default -> false;
             };
 
             if (hasValidTarget) {
-                tileManager.highlightTiles(powerTiles, Color.BLUE);
+                tileManager.highlightTiles(actions.getPowerTiles(), Color.BLUE);
             } else {
-                tileManager.highlightTiles(powerTiles, Color.GREEN);
+                tileManager.highlightTiles(actions.getPowerTiles(), Color.GREEN);
             }
     }
 
@@ -630,7 +626,7 @@ public class Controller2 {
         }
         actions.setHasMoved(true);
         // Reset selection
-        reachableTiles.clear();
+        actions.clearReachableTiles();
         tileManager.resetAllOverlays();
         updateActionButtonsState();
         updateMinionCountLabel();
@@ -638,11 +634,11 @@ public class Controller2 {
 
     }
     private void highlightReachableTiles() {
-        tileManager.highlightTiles(reachableTiles, Color.GREEN);
+        tileManager.highlightTiles(actions.getReachableTiles(), Color.GREEN);
     }
 
     private void highlightAttackRange() {
-        tileManager.highlightTiles(attackableTiles, Color.RED);
+        tileManager.highlightTiles(actions.getAttackableTiles(), Color.RED);
     }
 
     private void checkVoorSpelEinde() {
@@ -689,7 +685,7 @@ public class Controller2 {
 
     private void applyFireball() {
 
-        for (Tile tile : powerTiles) {
+        for (Tile tile : actions.getPowerTiles()) {
             boolean isOwnMinion = gameState.isMinionOwnedByCurrentPlayer(tile);
 
             Power power = gameState.getSelectedPower();
@@ -724,6 +720,6 @@ public class Controller2 {
 
     }
     private void updateActionButtonsState() {
-        buttonManager.updateButtons(attackableTiles);
+        buttonManager.updateButtons(actions.getAttackableTiles());
     }
 }

@@ -41,12 +41,28 @@ public class GameActions {
     public void setPowerTiles(Set<Tile> powerTiles) {
         this.powerTiles = powerTiles;
     }
+    public void clearAttackableTiles() {
+        attackableTiles.clear();
+    }
+    public void clearReachableTiles() {
+        reachableTiles.clear();
+    }
+    public void clearPowerTiles() {
+        powerTiles.clear();
+    }
+    public void resetMovementTiles() {
+        reachableTiles.clear();
+        attackableTiles.clear();
+    }
 
     public void resetActions() {
         hasMoved = false;
         hasAttacked = false;
         basisAttacked = false;
         specialAttack = false;
+        powerTiles.clear();
+        attackableTiles.clear();
+        reachableTiles.clear();
     }
 }
 
