@@ -30,6 +30,7 @@ public class GameState {
     private int hasUsedPower2 = 0;
     private boolean powerIsUsed = false;
     private final Set<Minion> processedMinions = new HashSet<>();
+    private final GameActions gameActions = new GameActions();
 
 
 
@@ -223,6 +224,10 @@ public class GameState {
     public void setCurrentTile(Tile tile) {
         currentlySelectedTile = tile;
 
+    }
+
+    public GameActions getGameActions() {
+        return gameActions;
     }
 
     public void resetBeurtButton() {
