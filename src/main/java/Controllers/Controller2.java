@@ -1,6 +1,5 @@
 package Controllers;
 import be.ugent.objprog.minionwars.MinionWars;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,8 +11,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.image.ImageView;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import models.GameLogic;
 import models.GameState;
@@ -29,7 +26,6 @@ import view.button.MinionButtonFactory;
 import view.hexagon.HexagonData;
 import view.hexagon.HexagonFactory;
 import view.hexagon.TileManager;
-import view.images.ImageLoader;
 import view.images.ImagePatternHelper;
 import view.panel.ActionPanel;
 import view.ui.GameView;
@@ -77,6 +73,7 @@ public class Controller2 {
     public void initialize() {
         if (!hexList.isEmpty()) return;
         hexagonFactory = new HexagonFactory();
+        setupKeyListener();
     }
 
     public void setInfo(String speler1, String speler2, int munten) {
@@ -88,7 +85,7 @@ public class Controller2 {
         this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
         this.tileManager = new TileManager(gameState, hexList);
-        this.gameView  = new GameView(gameState,tileManager);
+        this.gameView  = new GameView(gameState);
         this.infoPanel = new InfoPanel(gameState);
 
         this.actionPanel = new ActionPanel(
@@ -102,15 +99,39 @@ public class Controller2 {
 
         );
 
-
-
-        setupKeyListener();
-
         gameView.initializeUI(splitPane,coinImageView);
         updateUI();
         createMinionButtons();
         createHexagons(tiles);
         tileManager.markHomebases();
+    }
+    @FXML
+    private void handleBeurtButton() {
+        gameState.switchPlayer();
+        gameState.resetBeurtButton();
+        gameView.positionViewportForPlayer(gameScrollPane);
+        updateUI();
+        gameState.resetProcessedMinions();
+        tileManager.resetAllOverlays();
+        tileManager.markHomebases();
+        currentTab = "Bewegen";
+
+        if (!gameState.isPlacementPhase()){
+            beurtButton.setDisable(true);
+            totalProcessed = gameState.remainOne()? 1 : 2;
+            minionsProcessedThisTurn = 0;
+            hasMoved = false;
+            hasAttacked = false;
+            basisAttacked = false;
+            specialAttack = false;
+            updateMinionCountLabel();
+            processEffects();
+            actionPanel.updatePowerButtonsStyle();
+
+
+
+        }
+
     }
 
 
@@ -159,35 +180,6 @@ public class Controller2 {
         });
     }
 
-    @FXML
-    private void handleBeurtButton() {
-        gameState.switchPlayer();
-        gameState.resetBeurtButton();
-
-        gameView.positionViewportForPlayer(gameScrollPane);
-        updateUI();
-        gameState.resetProcessedMinions();
-        tileManager.resetAllOverlays();
-        tileManager.markHomebases();
-        currentTab = "Bewegen";
-
-        if (!gameState.isPlacementPhase()){
-            beurtButton.setDisable(true);
-            totalProcessed = gameState.remainOne()? 1 : 2;
-            minionsProcessedThisTurn = 0;
-            hasMoved = false;
-            hasAttacked = false;
-            basisAttacked = false;
-            specialAttack = false;
-            updateMinionCountLabel();
-            processEffects();
-            actionPanel.updatePowerButtonsStyle();
-
-
-
-        }
-
-    }
 
     private void updateUI() {
         uiManager.updateUI();
@@ -201,7 +193,6 @@ public class Controller2 {
             updateButtonStates();
             tileManager.markHomebases();
         }
-
         tileManager.updateMinionVisibility();
 
     }
@@ -454,9 +445,8 @@ public class Controller2 {
     }
 
     private void handleKeyPress(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE && gameState.isPlacementPhase()) {
+        if (event.getCode() == KeyCode.DELETE ) {
             Tile selectedTile = gameState.getSelectedTile();
-
             if (selectedTile != null && gameState.isOccupied(selectedTile)) {
                 Minion removedMinion = gameState.getPlacedMinion(selectedTile);
                 gameState.refundCoins(removedMinion.getCost());

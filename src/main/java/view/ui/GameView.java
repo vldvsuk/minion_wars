@@ -6,23 +6,20 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
+
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import models.GameState;
-import view.hexagon.HexagonFactory;
 import view.hexagon.TileManager;
 import view.images.ImageLoader;
 
 public class GameView {
-    private final TileManager tileManager;
     private final GameState gameState;
 
-    public GameView(GameState gameState, TileManager tileManager) {
+    public GameView(GameState gameState) {
         this.gameState = gameState;
-        this.tileManager = tileManager;
 
     }
 
@@ -91,4 +88,6 @@ public class GameView {
                 }});
         }
     }
+
+
 }
