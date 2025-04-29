@@ -14,6 +14,8 @@ public class GameState {
     private Minion selectedMinion;
     private Tile selectedTile;
     private Polygon currentlySelectedHex = null;
+    private Minion currentMinion = null;
+    private Tile currentlySelectedTile = null;
     private boolean isSpeler1AanZet = true;
     private int speler1Coins;
     private int speler2Coins;
@@ -209,11 +211,27 @@ public class GameState {
     public Polygon getCurrentlySelectedHex() {
         return currentlySelectedHex;
     }
+    public Minion getCurrentMinion() {
+        return currentMinion;
+    }
+    public void setCurrentMinion(Minion minion) {
+        currentMinion = minion;
+    }
+    public Tile getCurrentTile() {
+        return currentlySelectedTile;
+    }
+    public void setCurrentTile(Tile tile) {
+        currentlySelectedTile = tile;
+
+    }
+
     public void resetBeurtButton() {
         setSelectedPower(null);
         setPowerBoolean(false);
         setSelectedMinion(null);
         setSelectedTile(null);
         setCurrentlySelectedHex(null);
+        currentlySelectedTile = null;
+        currentMinion = null;
     }
 }
