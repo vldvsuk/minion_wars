@@ -165,15 +165,5 @@ public class ActionPanel {
     public void updatePowerButtonsStyle() {
         powerButtonHelper.updatePowerButtonsStyle();
     }
-    public Button getHealButton() {
-        return healButton;
-    }
 
-    public Button getBasicAttackButton() {
-        return basicAttackButton;
-    }
-
-    public Button getSpecialAttackButton() {
-        return specialAttackButton;
-    }
 }

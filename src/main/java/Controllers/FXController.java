@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import models.parsers.XmlLoader;
 
 import java.io.IOException;
 
@@ -38,7 +39,9 @@ public class FXController {
         this.stage = stage;
     }
 
-
+    public void initialize(String configPath) {
+        XmlLoader.setConfigPath(configPath);
+    }
 
 
     @FXML

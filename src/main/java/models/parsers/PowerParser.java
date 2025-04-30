@@ -17,7 +17,7 @@ public class PowerParser {
     public List<Power> parsePowers() {
         List<Power> powers = new ArrayList<>();
 
-        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
+        try (InputStream inputStream = XmlLoader.loadXml()) {
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);
             Element rootElement = document.getRootElement();

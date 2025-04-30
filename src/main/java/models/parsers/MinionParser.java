@@ -6,7 +6,6 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,8 +16,7 @@ public class MinionParser {
     public List<Minion> parseMinions() {
         List<Minion> minions = new ArrayList<>();
 
-        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
-
+        try (InputStream inputStream = XmlLoader.loadXml()) {
 
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);

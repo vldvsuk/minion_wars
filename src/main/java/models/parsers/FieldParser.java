@@ -4,8 +4,6 @@ import models.grond.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +12,7 @@ public class FieldParser {
     public List<Tile> parseField() {
         List<Tile> tiles = new ArrayList<>();
 
-        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
+        try (InputStream inputStream = XmlLoader.loadXml()) {
 
 
             SAXBuilder saxBuilder = new SAXBuilder();
