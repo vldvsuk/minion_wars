@@ -16,15 +16,11 @@ public class EffectParser {
     public List<Effect> parseEffects() {
         List<Effect> effects = new ArrayList<>();
 
-        try {
-            InputStream inputStream = getClass().getResourceAsStream("/be/ugent/objprog/minionwars/configs/game.xml");
-
-            if (inputStream == null) {
-                throw new FileNotFoundException("Bestand niet gevonden: /configs/game.xml");
-            }
-
+        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);
+
+
             Element rootElement = document.getRootElement();
             Element effectsElement = rootElement.getChild("effects");
             List<Element> effectElements = effectsElement.getChildren();

@@ -17,13 +17,7 @@ public class PowerParser {
     public List<Power> parsePowers() {
         List<Power> powers = new ArrayList<>();
 
-        try {
-            InputStream inputStream = getClass().getResourceAsStream("/be/ugent/objprog/minionwars/configs/game.xml");
-
-            if (inputStream == null) {
-                throw new FileNotFoundException("Bestand niet gevonden: game.xml");
-            }
-
+        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);
             Element rootElement = document.getRootElement();

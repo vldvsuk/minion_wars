@@ -17,15 +17,12 @@ public class MinionParser {
     public List<Minion> parseMinions() {
         List<Minion> minions = new ArrayList<>();
 
-        try {
-            InputStream inputStream = getClass().getResourceAsStream("/be/ugent/objprog/minionwars/configs/game.xml");
+        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
 
-            if (inputStream == null) {
-                throw new FileNotFoundException("Bestand niet gevonden: ");
-            }
 
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);
+
             Element rootElement = document.getRootElement();
             Element minionsElement = rootElement.getChild("minions");
             List<Element> minionElements = minionsElement.getChildren();

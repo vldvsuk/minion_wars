@@ -14,15 +14,12 @@ public class FieldParser {
     public List<Tile> parseField() {
         List<Tile> tiles = new ArrayList<>();
 
-        try {
-            InputStream inputStream = getClass().getResourceAsStream("/be/ugent/objprog/minionwars/configs/game.xml");
+        try (InputStream inputStream = XmlLoader.loadXml("game.xml")) {
 
-            if (inputStream == null) {
-                throw new FileNotFoundException("Bestand niet gevonden: game.xml");
-            }
 
             SAXBuilder saxBuilder = new SAXBuilder();
             Document document = saxBuilder.build(inputStream);
+
             Element rootElement = document.getRootElement();
             Element fieldElement = rootElement.getChild("field");
             List<Element> tileElements = fieldElement.getChildren();

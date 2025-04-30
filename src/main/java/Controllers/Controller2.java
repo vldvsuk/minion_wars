@@ -107,6 +107,7 @@ public class Controller2 {
     @FXML
     private void handleBeurtButton() {
         gameState.switchPlayer();
+        effectProcessor.processEffects(hexList);
         gameState.resetBeurtButton();
         gameView.positionViewportForPlayer(gameScrollPane);
         gameState.resetProcessedMinions();
@@ -118,7 +119,7 @@ public class Controller2 {
             beurtButton.setDisable(true);
             actions.resetActions();
             updateMinionCountLabel();
-            effectProcessor.processEffects(hexList);
+            checkTurnCompletion();
             actionPanel.updatePowerButtonsStyle();
             checkVoorSpelEinde();
         }
