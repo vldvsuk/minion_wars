@@ -8,42 +8,58 @@ import models.grond.Tile;
 import models.minions.Minion;
 import view.panel.ActionPanel;
 
-import java.util.Set;
-
 public class ButtonManager {
     private final ActionPanel actionPanel;
     private final Button rustButton;
     private final GameState gameState;
     private final GameLogic gameLogic;
+    private final GameActions actions;
+
 
     public ButtonManager(ActionPanel actionPanel, Button rustButton,
-                           GameState gameState, GameLogic gameLogic) {
+                         GameState gameState, GameLogic gameLogic) {
         this.actionPanel = actionPanel;
         this.rustButton = rustButton;
         this.gameState = gameState;
         this.gameLogic = gameLogic;
+        this.actions = gameState.getGameActions();
     }
 
-    public void updateButtons(Set<Tile> attackableTiles) {
-
+    public void updateButtons() {
         if (gameState.isPlacementPhase()) return;
 
-        GameActions actions = gameState.getGameActions();
         Tile tile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(tile);
-        boolean isParalized = minion != null && minion.isParalized();
 
-        boolean enemiesInRange = !isParalized && gameLogic.hasEnemyInAttackRange(attackableTiles);
-        boolean canHeal = !isParalized && (minion == null || minion.getHealCount() < 2);
-        boolean canUseSpecial = minion != null &&
-                !minion.isSpecialAttackUsed() &&
-                !actions.hasAttacked();
+        if (minion == null) return;
 
-        actionPanel.setBasicAndSpecialAttackDisabled(isParalized || actions.hasAttacked() || !enemiesInRange);
+        boolean isParalized = minion.isParalized();
+        boolean isDefenceFull = minion.getCurrentDefence() >= minion.getDefence();
+        boolean healLimitReached = minion.getHealCount() >= 2;
+        boolean enemiesInRange = !isParalized && gameLogic.hasEnemyInAttackRange(actions.getAttackableTiles());
+        boolean canUseSpecial = !minion.isSpecialAttackUsed() && !actions.hasAttacked();
+
+        // Bepaal knopstatussen
+        boolean disableHeal = isDefenceFull || isParalized || actions.hasAttacked() || healLimitReached;
+        boolean disableAttacks = isParalized || actions.hasAttacked() || !enemiesInRange;
+        boolean disableRust = isParalized || actions.hasAttacked() || actions.hasMoved();
+
+        // Update knop UI
+        actionPanel.setHealDisabled(disableHeal);
+        actionPanel.setBasicAndSpecialAttackDisabled(disableAttacks);
         actionPanel.setSpecialAttackVisible(canUseSpecial && minion.hasSpecialAbility() && enemiesInRange);
-        actionPanel.setHealDisabled(isParalized || actions.hasAttacked() || !canHeal);
         actionPanel.setStayButtonDisabled(isParalized || actions.hasMoved());
-        rustButton.setDisable(isParalized || actions.hasAttacked());
+        rustButton.setDisable(disableRust);
+
+        // Check of alle acties geblokkeerd zijn
+
+        if (disableHeal && disableAttacks && disableRust
+                && !gameState.getProcessedMinions().contains(minion)) {
+            actions.setHasNoAction(true); // Flag om aan te geven dat er geen acties mogelijk zijn
+        } else {
+            actions.setHasNoAction(false);
+        }
     }
+
 }
 

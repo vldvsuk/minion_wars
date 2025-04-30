@@ -8,8 +8,6 @@ import javafx.scene.text.TextAlignment;
 import models.GameState;
 import models.powers.Power;
 import view.button.PowerButtonHelper;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class ActionPanel {
@@ -166,5 +164,16 @@ public class ActionPanel {
 
     public void updatePowerButtonsStyle() {
         powerButtonHelper.updatePowerButtonsStyle();
+    }
+    public Button getHealButton() {
+        return healButton;
+    }
+
+    public Button getBasicAttackButton() {
+        return basicAttackButton;
+    }
+
+    public Button getSpecialAttackButton() {
+        return specialAttackButton;
     }
 }

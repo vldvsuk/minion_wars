@@ -28,6 +28,7 @@ public class GameState {
     private Power selectedPower = null;
     private int hasUsedPower1 = 0;
     private int hasUsedPower2 = 0;
+    private int totalMinions = 2;
     private boolean powerIsUsed = false;
     private final Set<Minion> processedMinions = new HashSet<>();
     private final GameActions gameActions = new GameActions();
@@ -159,9 +160,6 @@ public class GameState {
         return null;
     }
 
-    public boolean remainOne(){
-        return isSpeler1AanZet ? speler1Minions.size() == 1 : speler2Minions.size() == 1;
-    }
 
     public Effect findEffectByName(String effectName) {
         for (Effect effect : allEffects) {
@@ -229,6 +227,10 @@ public class GameState {
     public GameActions getGameActions() {
         return gameActions;
     }
+    public int getTotalMinions() {
+        return totalMinions;
+    }
+
 
     public void resetBeurtButton() {
         setSelectedPower(null);
@@ -238,5 +240,10 @@ public class GameState {
         setCurrentlySelectedHex(null);
         currentlySelectedTile = null;
         currentMinion = null;
+        if (!isPlacementPhase()){
+            totalMinions = isSpeler1AanZet ? speler1Minions.size()  : speler2Minions.size();
+        }
+
+
     }
 }

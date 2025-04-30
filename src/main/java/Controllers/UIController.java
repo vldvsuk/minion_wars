@@ -29,7 +29,7 @@ public class UIController {
     }
 
     private void updateMinionCountLabel(Label label) {
-        label.setText(gameState.getGameActions().getMinionProcessed() + "/2");
+        label.setText(gameState.getGameActions().getMinionProcessed() + "/" +  gameState.getTotalMinions());
     }
 
     private void updateTurnButton(Button button) {

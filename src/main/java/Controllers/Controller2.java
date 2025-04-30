@@ -49,18 +49,27 @@ public class Controller2 {
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
     private VBox labelBox;
-    public int totalProcessed = 2;
 
-    @FXML private SplitPane splitPane;
-    @FXML private Label naamLabel;
-    @FXML private Label coinsLabel;
-    @FXML private ImageView coinImageView;
-    @FXML private VBox minionsContainer;
-    @FXML private HBox coinsHBox;
-    @FXML private Label minionCountLabel;
-    @FXML private Button beurtButton;
-    @FXML private AnchorPane gameBoardContainer;
-    @FXML private ScrollPane gameScrollPane;
+    @FXML
+    private SplitPane splitPane;
+    @FXML
+    private Label naamLabel;
+    @FXML
+    private Label coinsLabel;
+    @FXML
+    private ImageView coinImageView;
+    @FXML
+    private VBox minionsContainer;
+    @FXML
+    private HBox coinsHBox;
+    @FXML
+    private Label minionCountLabel;
+    @FXML
+    private Button beurtButton;
+    @FXML
+    private AnchorPane gameBoardContainer;
+    @FXML
+    private ScrollPane gameScrollPane;
     private ActionPanel actionPanel;
     private Button rustButton;
 
@@ -80,10 +89,10 @@ public class Controller2 {
         this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
         this.tileManager = new TileManager(gameState, hexList);
-        this.gameView  = new GameView(gameState);
+        this.gameView = new GameView(gameState);
         this.infoPanel = new InfoPanel(gameState);
         this.actions = gameState.getGameActions();
-        this.effectProcessor = new EffectProcessor(gameState,tileManager);
+        this.effectProcessor = new EffectProcessor(gameState, tileManager);
         this.actionController = new ActionController(gameState, tileManager);
         this.uiController = new UIController(gameState, uiManager, infoPanel);
         this.actionPanel = new ActionPanel(
@@ -98,7 +107,7 @@ public class Controller2 {
         );
 
 
-        gameView.initializeUI(splitPane,coinImageView);
+        gameView.initializeUI(splitPane, coinImageView);
         updateUI();
         createMinionButtons();
         createHexagons(tiles);
@@ -115,8 +124,7 @@ public class Controller2 {
         tileManager.markHomebases();
         updateUI();
 
-        if (!gameState.isPlacementPhase()){
-            totalProcessed = gameState.remainOne()? 1 : 2;
+        if (!gameState.isPlacementPhase()) {
             beurtButton.setDisable(true);
             actions.resetActions();
             updateMinionCountLabel();
@@ -177,10 +185,10 @@ public class Controller2 {
 
         if (!gameState.isPlacementPhase()) {
             afterPlacement();
-            beurtButton.setDisable(actions.getMinionProcessed() < totalProcessed);
+            beurtButton.setDisable(actions.getMinionProcessed() < gameState.getTotalMinions());
             updateActionButtonsState();
 
-        }else{
+        } else {
             updateButtonStates();
             tileManager.markHomebases();
         }
@@ -201,7 +209,7 @@ public class Controller2 {
                 anyAffordable = true;
                 if (gameState.getSelectedMinion() == minion) {
                     button.getStyleClass().add("selected");
-                }else{
+                } else {
                     button.getStyleClass().remove("selected");
                 }
             }
@@ -235,7 +243,7 @@ public class Controller2 {
             return;
         }
 
-        if (actions.getMinionProcessed() >= totalProcessed) {
+        if (actions.getMinionProcessed() >= gameState.getTotalMinions()) {
             tileManager.resetAllOverlays();
             return;
         }
@@ -244,9 +252,9 @@ public class Controller2 {
 
         if (gameState.getCurrentMinion() == null) {
             gameState.setCurrentMinion(clickedMinion);
-        }else if (gameState.getCurrentMinion() != clickedMinion)return;
+        } else if (gameState.getCurrentMinion() != clickedMinion) return;
 
-        if (actions.hasMoved() && actions.hasAttacked()){
+        if (actions.hasMoved() && actions.hasAttacked()) {
             actions.setHasMoved(false);
             actions.setHasAttacked(false);
             gameState.setCurrentMinion(null);
@@ -258,29 +266,29 @@ public class Controller2 {
                 actionController.handleMove(tile);
                 updateAfterAction();
                 selectMinion(tile, overlayHex);
-                return;
             }
             // Handle attack
+
             else if (actionController.canAttack(tile)) {
-                    actionController.handleAttack(tile);
-                    updateAfterAction();
+                actionController.handleAttack(tile);
+                updateAfterAction();
                 return;
             }
         }
         actions.setBasisAttacked(false);
         actions.setSpecialAttack(false);
 
-        if (!actions.hasAttacked() && !actions.hasMoved()){
+        if (!actions.hasAttacked() && !actions.hasMoved()) {
             gameState.setCurrentMinion(null);
             if (!gameState.isOccupied(tile) && !gameState.isPlacementPhase()) {
-                if (gameState.getCurrentTile() == null ) {
+                if (gameState.getCurrentTile() == null) {
                     gameState.setCurrentTile(tile);
                     selectTile(tile, overlayHex);
-                }else if (gameState.getCurrentTile() == tile){
+                } else if (gameState.getCurrentTile() == tile) {
                     tileManager.resetAllOverlays();
                     labelBox.getChildren().clear();
                     gameState.setCurrentTile(null);
-                }else{
+                } else {
                     tileManager.resetAllOverlays();
                     selectTile(tile, overlayHex);
                     gameState.setCurrentTile(tile);
@@ -353,7 +361,8 @@ public class Controller2 {
         if (!gameState.isPlacementPhase()) {
             labelBox.getChildren().clear();
             HBox nieuweHBox = infoPanel.generateTileInfo(tile);
-            labelBox.getChildren().add(0, nieuweHBox);}
+            labelBox.getChildren().add(0, nieuweHBox);
+        }
     }
 
 
@@ -375,9 +384,9 @@ public class Controller2 {
     }
 
     private void selectMinion(Tile tile, Polygon overlayHex) {
-       if (!gameState.isPlacementPhase()){
-           tileManager.resetAllOverlays();
-       }
+        if (!gameState.isPlacementPhase()) {
+            tileManager.resetAllOverlays();
+        }
 
         if (gameState.isMinionOwnedByCurrentPlayer(tile)) {
             gameState.setSelectedTile(tile);
@@ -390,7 +399,7 @@ public class Controller2 {
     }
 
     private void handleKeyPress(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE && gameState.isPlacementPhase() ) {
+        if (event.getCode() == KeyCode.DELETE && gameState.isPlacementPhase()) {
             Tile selectedTile = gameState.getSelectedTile();
             if (selectedTile != null && gameState.isOccupied(selectedTile)) {
                 Minion removedMinion = gameState.getPlacedMinion(selectedTile);
@@ -404,14 +413,15 @@ public class Controller2 {
             }
         }
     }
-    private void afterPlacement(){
+
+    private void afterPlacement() {
         removeMinionButtons();
         addCustomVBox();
         minionCountLabel = gameView.makeMinionCountLabel();
         gameView.replaceCoinsDisplay(minionCountLabel, coinsHBox);
         rustButton = gameView.makeRustButton();
         rustButton.setOnAction(e -> handleRustButton());
-        gameView.setupActionButtons(beurtButton,rustButton);
+        gameView.setupActionButtons(beurtButton, rustButton);
         this.buttonManager = new ButtonManager(actionPanel, rustButton, gameState, gameLogic);
     }
 
@@ -520,21 +530,33 @@ public class Controller2 {
             } else if ("Aanvallen".equals(actions.getCurrentTab()) && !actions.hasAttacked()) {
                 actions.setAttackableTiles(gameLogic.calculateAttackRange(tile, minion.getMinRange(), minion.getCurrentMaxRange()));
                 highlightAttackRange();
+                updateActionButtonsState();
+
+                if (actions.isHasNoAction()) {
+                    gameState.addProcessedMinion(minion);
+                    actions.oneMoreMinionProcessed();
+                    gameState.setCurrentMinion(null);
+                    actions.setHasMoved(true);
+                    actions.setHasAttacked(true);
+                    gameState.setSelectedTile(null);
+                    tileManager.resetAllOverlays();
+                }
             }
         }
         updateActionButtonsState();
     }
+
     private void handleRustButton() {
         Tile tile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(tile);
 
         if (minion != null && !gameState.getProcessedMinions().contains(minion)) {
             actions.setHasAttacked(true);
-            if (actions.hasMoved()) {
-                actions.oneMoreMinionProcessed();
-                gameState.addProcessedMinion(minion);
-            }
-            if (minion.isSpecialAttackUsed()){
+            actions.setHasMoved(true);
+            actions.oneMoreMinionProcessed();
+            gameState.addProcessedMinion(minion);
+
+            if (minion.isSpecialAttackUsed()) {
                 // Als 2 keer gerust, reset speciale aanval
                 minion.setRestCount(minion.getRestCount() + 1);
                 if (minion.getRestCount() >= 2) {
@@ -542,10 +564,10 @@ public class Controller2 {
                     minion.setRestCount(0);
                 }
             }
+
+
         }
-        if ("Aanvallen".equals(actions.getCurrentTab())) {
-            tileManager.resetAllOverlays();
-        }
+        tileManager.resetAllOverlays();
         updateMinionCountLabel();
         checkTurnCompletion();
     }
@@ -554,17 +576,17 @@ public class Controller2 {
         actions.clearPowerTiles();
         String powerType = gameState.getSelectedPower().getType().toLowerCase();
         actions.setPowerTiles(gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius()));
-            boolean hasValidTarget = switch (powerType) {
-                case "healing" -> gameLogic.hasFriendlyInRange(actions.getPowerTiles());
-                case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(actions.getPowerTiles());
-                default -> false;
-            };
+        boolean hasValidTarget = switch (powerType) {
+            case "healing" -> gameLogic.hasFriendlyInRange(actions.getPowerTiles());
+            case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(actions.getPowerTiles());
+            default -> false;
+        };
 
-            if (hasValidTarget) {
-                tileManager.highlightTiles(actions.getPowerTiles(), Color.BLUE);
-            } else {
-                tileManager.highlightTiles(actions.getPowerTiles(), Color.GREEN);
-            }
+        if (hasValidTarget) {
+            tileManager.highlightTiles(actions.getPowerTiles(), Color.BLUE);
+        } else {
+            tileManager.highlightTiles(actions.getPowerTiles(), Color.GREEN);
+        }
     }
 
     private void highlightReachableTiles() {
@@ -601,23 +623,24 @@ public class Controller2 {
     }
 
     private void updateMinionCountLabel() {
-        if (actions.getMinionProcessed()<=totalProcessed){
-            minionCountLabel.setText(actions.getMinionProcessed() + "/" + totalProcessed);
+        if (actions.getMinionProcessed() <= gameState.getTotalMinions()) {
+            minionCountLabel.setText(actions.getMinionProcessed() + "/" + gameState.getTotalMinions());
         }
         updateActionButtonsState();
     }
 
     private void checkTurnCompletion() {
-        if (actions.getMinionProcessed() >= totalProcessed) {
+        if (actions.getMinionProcessed() >= gameState.getTotalMinions()) {
             beurtButton.setDisable(false);
             tileManager.resetAllOverlays();
             gameState.setSelectedTile(null);
             gameState.setCurrentlySelectedHex(null);
             gameState.setCurrentMinion(null);
+
         }
     }
 
     private void updateActionButtonsState() {
-        buttonManager.updateButtons(actions.getAttackableTiles());
+        buttonManager.updateButtons();
     }
 }

@@ -10,6 +10,7 @@ public class GameActions {
     private boolean hasAttacked = false;
     private boolean basisAttacked = false;
     private boolean specialAttack = false;
+    private boolean hasNoAction = false;
 
     private Set<Tile> attackableTiles = new HashSet<>();
     private Set<Tile> reachableTiles = new HashSet<>();
@@ -56,6 +57,8 @@ public class GameActions {
     public void setCurrentTab(String currentTab) { this.currentTab = currentTab; }
     public int getMinionProcessed() { return minionProcessed; }
     public void oneMoreMinionProcessed() { minionProcessed++; }
+    public void setHasNoAction(boolean hasNoAction) { this.hasNoAction = hasNoAction; }
+    public boolean isHasNoAction() { return hasNoAction; }
 
     public void resetActions() {
         hasMoved = false;
