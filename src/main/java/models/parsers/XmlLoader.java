@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 public class XmlLoader {
     private static String externalConfigPath;
-    private static final String DEFAULT_RESOURCE_PATH = "/be/ugent/objprog/minionwars/configs/game.xml";
+    private static final String DEFAULT_RESOURCE_PATH = "/be/ugent/objprog/minionwars/configs/game-big.xml";
 
     public static void setConfigPath(String path) {
         externalConfigPath = path;

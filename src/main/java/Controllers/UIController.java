@@ -15,14 +15,10 @@ import view.ui.UIManager;
 public class UIController {
 
     private final GameView gameView;
-    private final UIManager uiManager;
-    private final ActionPanel actionPanel;
 
-    public UIController(GameView gameView,UIManager uiManager, ActionPanel actionPanel,SplitPane splitPane, ImageView coinImageView) {
+
+    public UIController(GameView gameView,SplitPane splitPane, ImageView coinImageView) {
         this.gameView = gameView;
-        this.uiManager = uiManager;
-        this.actionPanel = actionPanel;
-
         gameView.initializeUI(splitPane, coinImageView);
     }
 

@@ -46,6 +46,7 @@ public class Controller2 {
     private EffectProcessor effectProcessor;
     private ActionController actionController;
     private ButtonHandler buttonHandler;
+    private UIController uiController;
     private final List<Button> minionButtons = new ArrayList<>();
     private final List<Polygon> hexList = new ArrayList<>();
     private VBox labelBox;
@@ -80,6 +81,7 @@ public class Controller2 {
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
         this.tileManager = new TileManager(gameState, hexList);
         this.gameView = new GameView(gameState);
+        this.uiController = new UIController(gameView,splitPane,coinImageView);
         this.infoPanel = new InfoPanel(gameState);
         this.actions = gameState.getGameActions();
         this.effectProcessor = new EffectProcessor(gameState, tileManager);
@@ -96,7 +98,6 @@ public class Controller2 {
 
         );
 
-        gameView.initializeUI(splitPane, coinImageView);
         updateUI();
         createMinionButtons();
         createHexagons(tiles);
@@ -378,7 +379,7 @@ public class Controller2 {
         gameView.replaceCoinsDisplay(minionCountLabel, coinsHBox);
         rustButton = gameView.makeRustButton();
         rustButton.setOnAction(e -> handleRustButton());
-        gameView.setupActionButtons(beurtButton, rustButton);
+        uiController.setupActionButtons(beurtButton, rustButton);
         this.buttonManager = new ButtonManager(actionPanel, rustButton, gameState, gameLogic);
     }
 
@@ -514,7 +515,7 @@ public class Controller2 {
 
     private void updateMinionCountLabel() {
         if (actions.getMinionProcessed() <= gameState.getTotalMinions()) {
-            minionCountLabel.setText(actions.getMinionProcessed() + "/" + gameState.getTotalMinions());
+            uiController.updateMinionCountLabel(minionCountLabel, actions.getMinionProcessed(), gameState.getTotalMinions());
         }
         updateActionButtonsState();
     }
