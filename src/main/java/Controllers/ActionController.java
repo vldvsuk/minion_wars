@@ -150,5 +150,22 @@ public class ActionController {
             tileManager.resetTileVisual(tile);
         }
     }
+    public void handleAddMinion(Minion minion){
+        gameState.addProcessedMinion(minion);
+        actions.oneMoreMinionProcessed();
+        gameState.setCurrentMinion(null);
+        actions.setHasMoved(true);
+        actions.setHasAttacked(true);
+        gameState.setSelectedTile(null);
+        tileManager.resetAllOverlays();
+    }
+    public void resetNewAction(){
+        actions.setHasMoved(false);
+        actions.setHasAttacked(false);
+        gameState.setCurrentMinion(null);
+        gameState.setSelectedTile(null);
+    }
+
+
 }
 

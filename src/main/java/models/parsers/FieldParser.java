@@ -1,5 +1,4 @@
 package models.parsers;
-
 import models.grond.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
