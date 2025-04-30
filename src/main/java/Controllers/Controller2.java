@@ -50,26 +50,16 @@ public class Controller2 {
     private final List<Polygon> hexList = new ArrayList<>();
     private VBox labelBox;
 
-    @FXML
-    private SplitPane splitPane;
-    @FXML
-    private Label naamLabel;
-    @FXML
-    private Label coinsLabel;
-    @FXML
-    private ImageView coinImageView;
-    @FXML
-    private VBox minionsContainer;
-    @FXML
-    private HBox coinsHBox;
-    @FXML
-    private Label minionCountLabel;
-    @FXML
-    private Button beurtButton;
-    @FXML
-    private AnchorPane gameBoardContainer;
-    @FXML
-    private ScrollPane gameScrollPane;
+    @FXML private SplitPane splitPane;
+    @FXML private Label naamLabel;
+    @FXML private Label coinsLabel;
+    @FXML private ImageView coinImageView;
+    @FXML private VBox minionsContainer;
+    @FXML private HBox coinsHBox;
+    @FXML private Label minionCountLabel;
+    @FXML private Button beurtButton;
+    @FXML private AnchorPane gameBoardContainer;
+    @FXML private ScrollPane gameScrollPane;
     private ActionPanel actionPanel;
     private Button rustButton;
 
@@ -540,6 +530,8 @@ public class Controller2 {
                     actions.setHasAttacked(true);
                     gameState.setSelectedTile(null);
                     tileManager.resetAllOverlays();
+                    checkTurnCompletion();
+                    updateMinionCountLabel();
                 }
             }
         }

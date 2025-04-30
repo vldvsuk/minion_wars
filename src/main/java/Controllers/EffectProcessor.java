@@ -31,7 +31,10 @@ public class EffectProcessor {
                     continue;
                 }
                 for (Effect effect : effectsToProcess) {
-                    effect.verminderDuration();
+                    if(gameState.isMinionOwnedByCurrentPlayer(tile)){
+                        effect.verminderDuration();
+                    }
+
                     minion.applyEffect(effect);
 
                     if (effect.getDuration() <= 0) {
