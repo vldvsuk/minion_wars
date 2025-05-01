@@ -54,12 +54,8 @@ public class ButtonManager {
 
         // Check of alle acties geblokkeerd zijn
 
-        if (disableHeal && disableAttacks && disableRust
-                && !gameState.getProcessedMinions().contains(minion)) {
-            actions.setHasNoAction(true); // Flag om aan te geven dat er geen acties mogelijk zijn
-        } else {
-            actions.setHasNoAction(false);
-        }
+        actions.setHasNoAction(disableHeal && disableAttacks && disableRust
+                && !gameState.getProcessedMinions().contains(minion)); // Flag om aan te geven dat er geen acties mogelijk zijn
     }
 }
 

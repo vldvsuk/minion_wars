@@ -117,10 +117,12 @@ public class PowerButtonHelper {
         statsContainer.setAlignment(Pos.CENTER);
 
         // Bepaal juist icoon voor waarde
-        Image valueIcon = switch (power.getType().toLowerCase()) {
-            case "healing" -> ImageLoader.loadHealthIcon();
-            default -> ImageLoader.loadAttackIcon();
-        };
+        Image valueIcon;
+        if (power.getType().equalsIgnoreCase("healing")) {
+            valueIcon = ImageLoader.loadHealthIcon();
+        } else {
+            valueIcon = ImageLoader.loadAttackIcon();
+        }
 
         // Maak statistiekregels
         HBox valueBox = StatBoxFactory.createStatBox(

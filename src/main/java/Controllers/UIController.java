@@ -54,7 +54,7 @@ public class UIController {
         tileManager.markSelected(overlayHex);
         labelBox.getChildren().clear();
         HBox nieuweHBox = infoPanel.generateTileInfo(tile);
-        labelBox.getChildren().add(0, nieuweHBox);
+        labelBox.getChildren().addFirst(nieuweHBox);
 
     }
 }
