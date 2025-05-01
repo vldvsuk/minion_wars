@@ -3,6 +3,8 @@ package view.ui;
 import javafx.scene.control.Label;
 import models.GameState;
 
+/** Klasse voor de udating vain de names en coins**/
+
 public class UIManager {
     private final GameState gameState;
     private final Label naamLabel;

@@ -1,12 +1,14 @@
 package models.powers;
 
+
+/** Hoofd Power klasse**/
 public class Power {
-    private final String type;
-    private final int radius;
-    private final int value;
-    private final String name;
-    private final String effect;
-    private final int effectValue;
+    private final String type;      // Type power (bijv. attack, heal, buff)
+    private final int radius;       // Bereik waarin de power actief is
+    private final int value;        // Basiskracht/waarde van de power
+    private final String name;      // Weergavenaam van de power
+    private final String effect;    // Type effect (bijv. burn, poison, rage)
+    private final int effectValue;  // Intensiteit van het effect
 
     public Power(String type, String name, int radius, int value, String effect, int effectValue) {
         this.type = type;

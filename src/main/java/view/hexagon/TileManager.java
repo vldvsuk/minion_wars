@@ -11,6 +11,8 @@ import view.images.ImagePatternHelper;
 import java.util.List;
 import java.util.Set;
 
+/** Beheert de visuele weergave van hexagonen en hun overlay-effecten.**/
+
 public class TileManager {
     private final GameState gameState;
     private final GameLogic gameLogic;
@@ -23,7 +25,7 @@ public class TileManager {
     }
 
 
-    public void resetAllOverlays() {
+    public void resetAllOverlays() { // Reset alle overlay-effecten naar standaardwaarden en de borders van de minions
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             Tile tile = data.getTile();
@@ -56,7 +58,7 @@ public class TileManager {
     }
 
 
-    public void highlightTiles(Set<Tile> tiles, Color color) {
+    public void highlightTiles(Set<Tile> tiles, Color color) { // Markeert specifieke tegels met een kleur voor visuele highlight
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             Polygon overlay = data.getOverlay();
@@ -78,7 +80,7 @@ public class TileManager {
     }
 
 
-    public void updateMinionVisual(Tile tile, Minion minion) {
+    public void updateMinionVisual(Tile tile, Minion minion) { // Update de visuele weergave van een minion op een tegel
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             if (data.getTile().equals(tile)) {
@@ -92,7 +94,7 @@ public class TileManager {
         }
     }
 
-    public void markHomebases() {
+    public void markHomebases() { // Markeert homebases tijdens plaatsingsfase
         if (!gameState.isPlacementPhase()) return;
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
@@ -129,7 +131,7 @@ public class TileManager {
 
     }
 
-    public void resetTileVisual(Tile tile) {
+    public void resetTileVisual(Tile tile) { // Reset een tegel naar originele weergave
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             if (data.getTile().equals(tile)) {
@@ -150,7 +152,7 @@ public class TileManager {
         }
     }
 
-    public void updateMinionVisibility() {
+    public void updateMinionVisibility() { // Update zichtbaarheid van minions op basis van spelstatus
         for (Polygon hex : hexList) {
             HexagonData data = (HexagonData) hex.getUserData();
             Tile tile = data.getTile();
@@ -181,7 +183,7 @@ public class TileManager {
         }
     }
 
-    private void resetTileToOriginal(Polygon hex, Tile tile) {
+    private void resetTileToOriginal(Polygon hex, Tile tile) { // tile resetten als er minion verbergen is
         try {
             hex.setFill(ImagePatternHelper.createTilePattern(tile.getType().toLowerCase()));
         } catch (Exception e) {
@@ -189,13 +191,13 @@ public class TileManager {
         }
     }
 
-    public void markSelected(Polygon overlayHex) {
+    public void markSelected(Polygon overlayHex) { // selected overlay tile/minion
         overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
         overlayHex.setOpacity(0.7);
         overlayHex.setStroke(Color.GREEN);
     }
 
-    public void updatePowerRangeVisuals(Tile centerTile) {
+    public void updatePowerRangeVisuals(Tile centerTile) { // Update de visuele weergave voor krachtbereiken
         gameState.getGameActions().clearPowerTiles();
         String powerType = gameState.getSelectedPower().getType().toLowerCase();
         gameState.getGameActions().setPowerTiles(gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius()));

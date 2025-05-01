@@ -10,10 +10,10 @@ import javafx.geometry.Pos;
 import models.GameState;
 import models.minions.Minion;
 import view.images.ImageLoader;
-
 import java.util.List;
-
 import static view.button.StatBoxFactory.createStatBox;
+
+/**Fabriek voor het aanmaken van minionknoppen met afbeeldingen en statistieken.**/
 
 public class MinionButtonFactory {
     private final GameState gameState;
@@ -24,7 +24,7 @@ public class MinionButtonFactory {
         this.minionButtons = minionButtons;
     }
 
-    public Button createMinionButton(Minion minion) {
+    public Button createMinionButton(Minion minion) { // Maakt een nieuwe minionknop aan met visuele elementen
         Button button = new Button();
         button.getStyleClass().add("minion-button");
         button.setMaxWidth(Double.MAX_VALUE);
@@ -50,7 +50,7 @@ public class MinionButtonFactory {
         return content;
     }
 
-    private ImageView createMinionImageView(Minion minion) {
+    private ImageView createMinionImageView(Minion minion) { // Creëert een minion image voor de minionknop
         ImageView imageView = new ImageView();
         try {
             Image image = ImageLoader.loadMinionImage(minion.getType());
@@ -66,7 +66,7 @@ public class MinionButtonFactory {
         return imageView;
     }
 
-    private HBox createMainContent(Minion minion) {
+    private HBox createMainContent(Minion minion) { //Creëert de hoofdinhoud voor de minionknop
         HBox mainContent = new HBox(22);
         mainContent.setAlignment(Pos.CENTER_LEFT);
         mainContent.setStyle("-fx-padding: 0 0 0 10;");
@@ -81,7 +81,7 @@ public class MinionButtonFactory {
         return mainContent;
     }
 
-    private VBox createStatsBox(Minion minion) {
+    private VBox createStatsBox(Minion minion) { // Creëert de stats info voor de minionknop
         VBox statsBox = new VBox(5);
         statsBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -105,7 +105,7 @@ public class MinionButtonFactory {
         return statsBox;
     }
 
-
+    /** Handelt klikgebeurtenissen van de gebruiker **/
     private void handleButtonClick(Button button, Minion minion) {
         minionButtons.forEach(btn -> btn.getStyleClass().remove("selected"));
 

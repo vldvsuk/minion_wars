@@ -5,18 +5,28 @@ import models.grond.Tile;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GameActions {
-    private boolean hasMoved = false;
-    private boolean hasAttacked = false;
-    private boolean basisAttacked = false;
-    private boolean specialAttack = false;
-    private boolean hasNoAction = false;
+/**
+ * Houdt de actiestaten van het huidige spel bij, inclusief beweging, aanvallen en selecteerbare tegels.
+ * Beheert tijdelijke spelstatussen gerelateerd aan speleracties en UI-interacties.
+ */
 
-    private Set<Tile> attackableTiles = new HashSet<>();
-    private Set<Tile> reachableTiles = new HashSet<>();
-    private Set<Tile> powerTiles = new HashSet<>();
-    private String currentTab = "Bewegen";
-    private int minionProcessed = 0;
+public class GameActions {
+
+    // Actievlaggen
+    private boolean hasMoved = false;          // Geeft aan of de huidige minion bewogen is
+    private boolean hasAttacked = false;       // Geeft aan of de huidige minion aangevallen heeft
+    private boolean basisAttacked = false;     // Geeft aan of een basisaanval gebruikt is
+    private boolean specialAttack = false;     // Geeft aan of een speciale aanval gebruikt is
+    private boolean hasNoAction = false;       // Geeft aan of een minion geen acties kan uitvoeren
+
+    // Tegelselectie-sets
+    private Set<Tile> attackableTiles = new HashSet<>();  // Tegels beschikbaar voor aanvallen
+    private Set<Tile> reachableTiles = new HashSet<>();   // Tegels beschikbaar voor beweging
+    private Set<Tile> powerTiles = new HashSet<>();       // Tegels beïnvloed door krachten
+
+    // UI-staat
+    private String currentTab = "Bewegen";     // Huidig geselecteerd actietabblad
+    private int minionProcessed = 0;           // Aantal minions dat acties heeft voltooid
 
     // Getters en setters
     public boolean hasMoved() { return hasMoved; }
@@ -44,9 +54,7 @@ public class GameActions {
     public void setPowerTiles(Set<Tile> powerTiles) {
         this.powerTiles = powerTiles;
     }
-    public void clearAttackableTiles() {
-        attackableTiles.clear();
-    }
+
     public void clearReachableTiles() {
         reachableTiles.clear();
     }
@@ -60,7 +68,7 @@ public class GameActions {
     public void setHasNoAction(boolean hasNoAction) { this.hasNoAction = hasNoAction; }
     public boolean isHasNoAction() { return hasNoAction; }
 
-    public void resetActions() {
+    public void resetActions() {  // Reset alle actiestaten voor een nieuwe beurt
         hasMoved = false;
         hasAttacked = false;
         basisAttacked = false;

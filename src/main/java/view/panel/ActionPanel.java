@@ -9,20 +9,18 @@ import models.GameState;
 import models.powers.Power;
 import view.button.PowerButtonHelper;
 import java.util.function.Consumer;
-
+/** Klasse di zorgt voor setups al de tabs en nieuwe buttons **/
 public class ActionPanel {
     private Button specialAttackButton;
     private Button healButton;
     private Button stayButton;
     private Button basicAttackButton;
-    private final GameState gameState;
 
 
     private final Runnable onStayAction;
     private final Runnable onBasicAttackAction;
     private final Runnable onHealAction;
     private final Runnable onSpecialAttackAction;
-    private final Consumer<Power> onPowerSelected;
     private final Consumer<String> onTabChanged;
     private final PowerButtonHelper powerButtonHelper;
 
@@ -32,11 +30,9 @@ public class ActionPanel {
                        Runnable onSpecialAttackAction,
                        Consumer<Power> onPowerSelected,
                        Consumer<String> onTabChanged) {
-        this.gameState = gameState;
         this.onStayAction = onStayAction;
         this.onBasicAttackAction = onBasicAttackAction;
         this.onHealAction = onHealAction;
-        this.onPowerSelected = onPowerSelected;
         this.onTabChanged = onTabChanged;
         this.onSpecialAttackAction = onSpecialAttackAction;
         this.powerButtonHelper = new PowerButtonHelper(gameState, onPowerSelected);
@@ -84,7 +80,7 @@ public class ActionPanel {
         return tabBox;
     }
 
-    private Tab createMovementTab() {
+    private Tab createMovementTab() { // eerste tab: movement(bewegen)
         VBox content = new VBox(15);
         content.setAlignment(Pos.CENTER);
         content.setPrefWidth(170);
@@ -103,7 +99,7 @@ public class ActionPanel {
         return new Tab("Bewegen", content);
     }
 
-    private Tab createAttackTab() {
+    private Tab createAttackTab() { // tweede tab: attack (aanvallen)
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
         content.setPrefWidth(170);
@@ -141,8 +137,8 @@ public class ActionPanel {
         return new Tab("Aanvallen", new StackPane(content));
     }
 
-    public Tab createBonusTab() {
-        return new BonusTab(gameState, onPowerSelected, powerButtonHelper).createTab();
+    public Tab createBonusTab() { // hier is de bonus tab creatie
+        return new BonusTab(powerButtonHelper).createTab();
     }
 
     public void setSpecialAttackVisible(boolean visible) {

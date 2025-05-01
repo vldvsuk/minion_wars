@@ -1,31 +1,37 @@
 package models.minions;
 
-
 import models.effects.Effect;
-
 import java.util.ArrayList;
 import java.util.List;
 
+    /** Hoofd minion klasse**/
+
 public class Minion {
-    private final String type;
-    private final String name;
-    private final int cost;
-    private final int movement;
-    private final int minRange;
-    private final int maxRange;
-    private final int attack;
-    private final int defence;
-    private int currentDefence;
-    private final String effect;
-    private final int effectValue;
-    private int healCount = 0;
-    private final List<Effect> activeEffects = new ArrayList<>();
-    private int currentMovement;
-    private int currentMaxRange;
-    private int currentAttack;
-    private boolean isParalized;
-    private boolean specialAttackUsed = false;
-    private int restCount = 0;
+    // Basiseigenschappen (onveranderlijk na creatie)
+    private final String type;       // Type minion
+    private final String name;       // Weergavenaam
+    private final int cost;          // Kosten om in te zetten
+    private final int movement;      // Basisbewegingspunten
+    private final int minRange;      // Minimale aanvalsafstand
+    private final int maxRange;      // Maximale aanvalsafstand
+    private final int attack;        // Basisaanvalskracht
+    private final int defence;       // Basisverdediging
+    private final String effect;     // Speciale ability type
+    private final int effectValue;   // Waarde van speciale ability
+
+    // Dynamische statuswaarden
+    private int currentDefence;      // Huidige verdediging (kan veranderen)
+    private int currentMovement;     // Actuele beweging (beïnvloed door effecten)
+    private int currentMaxRange;     // Actueel maximaal bereik
+    private int currentAttack;       // Actuele aanvalskracht
+    private boolean isParalized;     // Verlamd status
+
+    // Gebruikstrackers
+    private int healCount = 0;           // Aantal keer genezen
+    private int restCount = 0;           // Aantal rustbeurten nodig
+    private boolean specialAttackUsed;   // Is speciale aanval gebruikt?
+    private final List<Effect> activeEffects = new ArrayList<>(); // Actieve status-effecten
+
 
 
     // Constructor voor alle minions
@@ -122,7 +128,7 @@ public class Minion {
         return isParalized;
     }
 
-    public Minion copy() {
+    public Minion copy() { // Maakt een onafhankelijke kopie (gebruikt bij het clonen)
         return new Minion(
                 this.type,
                 this.name,
@@ -144,6 +150,7 @@ public class Minion {
         activeEffects.add(effect);
     }
 
+    // Past een statuseffect toe en past stats aan
     public void applyEffect(Effect effect) {
         switch (effect.getType().toLowerCase()) {
             case "rage" -> this.currentAttack +=  effect.getValue();
@@ -165,6 +172,7 @@ public class Minion {
         resetEffect(effect);
     }
 
+    // Verwijdert effect en herstelt originele waarden waar nodig
     private void resetEffect(Effect effect) {
         switch (effect.getType().toLowerCase()) {
             case "rage" -> this.currentAttack = attack;

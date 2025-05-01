@@ -14,29 +14,33 @@ import javafx.scene.text.FontWeight;
 import models.GameState;
 import view.images.ImageLoader;
 
+/** Handelt de UI-elementen van het spel af, inclusief lay-out en actieknoppen**/
+
 public class GameView {
     private final GameState gameState;
 
     public GameView(GameState gameState) {
         this.gameState = gameState;
-
     }
 
+    // Initialiseert hoofd-UI componenten (muntafbeelding en gesplitste paneel)
     public void initializeUI(SplitPane splitPane, ImageView coinImageView) {
         setupCoinImage(coinImageView);
         setupSplitPane(splitPane);
     }
 
+    // Laadt en toont de munt-icoonafbeelding
     private void setupCoinImage(ImageView coinImageView) {
         coinImageView.setImage(ImageLoader.loadCoinIcon());
     }
 
+    // Zorgt dat het splitpaneel altijd op 25% positie blijft
     private void setupSplitPane(SplitPane splitPane) {
         splitPane.getDividers().getFirst().positionProperty().addListener((obs, oldVal, newVal) ->
                 Platform.runLater(() -> splitPane.setDividerPositions(0.25)));
     }
 
-
+    // Maakt een teller-label voor minions met blauwe tekst
     public Label makeMinionCountLabel(){
         Label minionCountLabel = new Label("0/2");
         minionCountLabel.setTextFill(Color.BLUE);
@@ -44,6 +48,7 @@ public class GameView {
         return minionCountLabel;
     }
 
+    // Vervangt munten-weergave door minion-icoon en teller
     public void replaceCoinsDisplay(Label minionCountLabel, HBox coinsHBox) {
         ImageView minionIcon = new ImageView(ImageLoader.loadUseMinionIcon());
         minionIcon.setFitHeight(26);
@@ -54,6 +59,7 @@ public class GameView {
         coinsHBox.getChildren().addAll(minionIcon, minionCountLabel);
     }
 
+    // Maakt een 'Rust'-knop met standaardstyling
     public Button makeRustButton(){
         Button rustButton = new Button("Rust");
         rustButton.setPrefWidth(80);
@@ -62,10 +68,8 @@ public class GameView {
         return rustButton;
     }
 
-
+    // Configureert actieknoppen (vervangt bestaande knoppen)
     public void setupActionButtons(Button beurtButton, Button rustButton) {
-
-        // Verwijder bestaande button
         HBox buttonContainer = (HBox) beurtButton.getParent();
         buttonContainer.getChildren().clear();
         beurtButton.setPrefHeight(35);
@@ -73,6 +77,7 @@ public class GameView {
         buttonContainer.setSpacing(5);
     }
 
+    // Past zichtgebied aan gebaseerd op actieve speler
     public void positionViewportForPlayer(ScrollPane gameScrollPane) {
         if (gameScrollPane != null) {
             Platform.runLater(() -> {
@@ -87,6 +92,5 @@ public class GameView {
                 }});
         }
     }
-
-
 }
+

@@ -6,19 +6,27 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Polygon;
 import view.images.ImagePatternHelper;
 
+
+/**Fabriek voor het aanmaken van hexagonale vormen voor tegels.**/
+
 public class HexagonFactory {
     private static final double HEX_SIZE = 74.0;
 
     public HexagonData createHexagon(Tile tile) {
-        double n = Math.sqrt(HEX_SIZE * HEX_SIZE * 0.75);
-        double hexWidth = 2 * n;
-        double hexHeight = 2 * HEX_SIZE;
+
+        double n = Math.sqrt(HEX_SIZE * HEX_SIZE * 0.75);  // Korte zijde
+        double hexWidth = 2 * n;                           // Breedte tussen hexagonen
+        double hexHeight = 2 * HEX_SIZE;                   // Hoogte van hexagoon
+
+        // Bepaal positie op het bord met offset voor even/oneven rijen
 
         double xCoord = tile.getX() * hexWidth + (tile.getY() % 2) * n + 80;
-        double yCoord = tile.getY() * hexHeight * 0.75 + 40;
+        double yCoord = tile.getY() * hexHeight * 0.75 + 40;  // 0.75 voor verticale overlapping
+
 
         Polygon hex = createHexagonShape(xCoord, yCoord, n);
         Polygon overlay = createHexagonShape(xCoord, yCoord, n);
+
 
         setupHexagonAppearance(hex, tile);
         setupOverlayAppearance(overlay);
@@ -48,7 +56,7 @@ public class HexagonFactory {
         hex.setStrokeWidth(1.5);
     }
 
-    private void setupOverlayAppearance(Polygon overlay) {
+    private void setupOverlayAppearance(Polygon overlay) { // visuele eigenschapen voor overlay
         overlay.setFill(Color.TRANSPARENT);
         overlay.setStroke(Color.BLACK);
         overlay.setStrokeWidth(1.5);

@@ -49,6 +49,7 @@ public class MinionParser {
 
         return minions;
     }
+    /**Verschillende klassen die worden niet gebruikt, staan nog omdat ik wil deze project nog later uitbreiden**/
     private Minion createMinion(String type, String name, int cost, int movement,
                                int minRange, int maxRange, int attack, int defence,
                                String effect, int effectValue) {

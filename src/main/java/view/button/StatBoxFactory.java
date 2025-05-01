@@ -7,7 +7,9 @@ import javafx.scene.layout.HBox;
 
 
 public class StatBoxFactory {
-    public static HBox createStatBox(Image icon, String value, String styleClass) {
+    public static HBox createStatBox(Image icon, String value, String styleClass) { // static methode om de stats te maken
+                                                                                    // want het wordt overaal gebruikt
+
         HBox box = new HBox(5);
         ImageView iconView = new ImageView(icon);
         iconView.setFitHeight(20);

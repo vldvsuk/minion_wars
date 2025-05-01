@@ -3,22 +3,15 @@ package view.panel;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.VBox;
-import models.GameState;
 import models.powers.Power;
 import models.parsers.PowerParser;
 import view.button.PowerButtonHelper;
-
 import java.util.List;
-import java.util.function.Consumer;
-
+/** Klasse die Bonus Tab aanmaakt **/
 public class BonusTab {
-    private final GameState gameState;
-    private final Consumer<Power> onPowerSelected;
     private final PowerButtonHelper powerButtonHelper;
 
-    public BonusTab(GameState gameState, Consumer<Power> onPowerSelected, PowerButtonHelper powerButtonHelper) {
-        this.gameState = gameState;
-        this.onPowerSelected = onPowerSelected;
+    public BonusTab(PowerButtonHelper powerButtonHelper) {
         this.powerButtonHelper = powerButtonHelper;
     }
 

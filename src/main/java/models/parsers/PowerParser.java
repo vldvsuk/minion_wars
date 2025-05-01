@@ -41,7 +41,7 @@ public class PowerParser {
         return powers;
 
     }
-
+    /**Verschillende klassen die worden niet gebruikt, staan nog omdat ik wil deze project nog later uitbreiden**/
     public static Power createPower(String type, String name, int radius, int value, String effect, int effectValue) {
         return switch (type.toLowerCase()) {
             case "fireball" -> new Fireball(type, name, radius, value, effect, effectValue);

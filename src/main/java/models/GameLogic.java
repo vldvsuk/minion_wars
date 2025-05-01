@@ -4,6 +4,12 @@ import java.util.*;
 import models.grond.Tile;
 import models.minions.Minion;
 
+
+/**
+ * Bevat de kernlogica van het spel voor beweging, aanvallen en berekeningen.
+ * Implementeert spelregels en wiskundige berekeningen voor het hexagonale grid.
+ */
+
 public class GameLogic {
     private final GameState gameState;
 
@@ -11,7 +17,7 @@ public class GameLogic {
         this.gameState = gameState;
     }
 
-    public Set<Tile> calculateMovementRange(Tile startTile, int movement) {
+    public Set<Tile> calculateMovementRange(Tile startTile, int movement) { // bereken tegels waar de minion naartoe kan bewegen
         Set<Tile> reachable = new HashSet<>();
 
         for (Tile tile : gameState.getTiles()) {
@@ -26,7 +32,7 @@ public class GameLogic {
         return reachable;
     }
 
-    private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) {
+    private boolean isValidMoveTarget(Tile start, Tile target, int maxDistance) { // controleert of een tegel een geldige bestemming is
         int distance = calculateHexDistance(start, target);
         Minion minion = gameState.getPlacedMinion(start);
 
@@ -35,7 +41,7 @@ public class GameLogic {
                 List.of("dirt", "forest", "mountains").contains(target.getType()) && !minion.isParalized();
     }
 
-    public Set<Tile> calculateAttackRange(Tile startTile, int minRange, int maxRange) {
+    public Set<Tile> calculateAttackRange(Tile startTile, int minRange, int maxRange) { // Bepaalt aanvalsbereik voor een minion
         Set<Tile> attackable = new HashSet<>();
         Minion minion = gameState.getPlacedMinion(startTile);
 
@@ -54,11 +60,13 @@ public class GameLogic {
         return attackable;
     }
 
-    public int calculateHexDistance(Tile start, Tile target) {
+    public int calculateHexDistance(Tile start, Tile target) { //  Bereken afstand tussen twee tegels in een hexgrid
         int startX = start.getX();
         int startY = start.getY();
         int targetX = target.getX();
         int targetY = target.getY();
+
+        // Converteer naar axial coördinaten
 
         int q1 = startX - (startY - (startY & 1)) / 2;
         int q2 = targetX - (targetY - (targetY & 1)) / 2;
@@ -66,7 +74,7 @@ public class GameLogic {
         return (Math.abs(q1 - q2) + Math.abs(q1 + startY - q2 - targetY) + Math.abs(startY - targetY)) / 2;
     }
 
-    public Set<Tile> calculateBonusRange(Tile centerTile, int radius) {
+    public Set<Tile> calculateBonusRange(Tile centerTile, int radius) { // Bepaalt bereik voor speciale krachten
         Set<Tile> powerTiles = new HashSet<>();
         for (Tile tile : gameState.getTiles()) {
             int distance = calculateHexDistance(centerTile, tile);
@@ -76,7 +84,7 @@ public class GameLogic {
         }
         return powerTiles;
     }
-    public boolean hasEnemyInAttackRange(Set<Tile> tiles){
+    public boolean hasEnemyInAttackRange(Set<Tile> tiles){ // Controleert op vijanden in een aanvalsbereik
 
         for (Tile tile : tiles) {
             if (gameState.isOccupied(tile) && !gameState.isMinionOwnedByCurrentPlayer(tile)) {
@@ -85,7 +93,7 @@ public class GameLogic {
         }
         return false;
     }
-    public boolean hasFriendlyInRange(Set<Tile> tiles){
+    public boolean hasFriendlyInRange(Set<Tile> tiles){ // Controleert op eigen minions in een gebied
 
         for (Tile tile : tiles) {
             if (gameState.isOccupied(tile) && gameState.isMinionOwnedByCurrentPlayer(tile)) {

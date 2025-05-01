@@ -39,6 +39,8 @@ public class EffectParser {
 
         return effects;
     }
+
+    /**Verschillende klassen die worden niet gebruikt, staan nog omdat ik wil deze project nog later uitbreiden**/
     public static Effect createEffect(String type, String name,int duration, int value) {
         return switch (type.toLowerCase()) {
             case "burn" -> new Burn(name, duration, value);

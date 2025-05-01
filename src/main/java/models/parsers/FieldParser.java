@@ -37,7 +37,7 @@ public class FieldParser {
 
         return tiles;
     }
-
+    /**Verschillende klassen die worden niet gebruikt, staan nog omdat ik wil deze project nog later uitbreiden**/
     private Tile createTile(String type, int x, int y, int homebase) {
         return switch (type.toLowerCase()) {
             case "dirt" -> new DirtTile(x, y, homebase);

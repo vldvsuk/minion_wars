@@ -15,8 +15,9 @@ import models.effects.Effect;
 import models.grond.Tile;
 import models.minions.Minion;
 import view.images.ImageLoader;
-
 import static view.button.StatBoxFactory.createStatBox;
+
+/** Toont gedetailleerde informatie over geselecteerde minions en tegels in het spel **/
 
 public class InfoPanel {
 
@@ -26,6 +27,7 @@ public class InfoPanel {
         this.gameState = gameState;
     }
 
+    // Maakt informatiebox voor minion met afbeelding, statistieken en effecten
     public VBox generateMinionInfo(Tile selectedTile, Minion selectedMinion) {
         VBox mainContainer = new VBox();
         mainContainer.setAlignment(Pos.TOP_LEFT);
@@ -92,7 +94,7 @@ public class InfoPanel {
                 "attack-stat"
         );
 
-        String health = String.valueOf(selectedMinion.getCurrentDefence()) + "/" + String.valueOf(selectedMinion.getDefence());
+        String health = (selectedMinion.getCurrentDefence()) + "/" + (selectedMinion.getDefence());
 
         HBox defenseBox = createStatBox(
                 ImageLoader.loadDefenseIcon(),
@@ -148,7 +150,7 @@ public class InfoPanel {
         return mainContainer;
     }
 
-
+    // Maakt informatiebox voor tegel met afbeelding en type
     public HBox generateTileInfo(Tile tile) {
         HBox hbox = new HBox(10);
         hbox.setAlignment(Pos.CENTER_LEFT);

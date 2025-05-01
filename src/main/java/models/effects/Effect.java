@@ -1,10 +1,12 @@
 package models.effects;
 
+
+/** Hoofd effect klasse **/
 public class Effect {
-    private final String type;
-    private final String name;
-    private int duration;
-    private final int value;
+    private final String type; // type van de effect
+    private final String name; // name van de effect
+    private int duration;      // duration van de effect
+    private final int value;   // value van de effect
 
     public Effect(String type, String name, int duration, int value) {
         this.type = type;
@@ -17,7 +19,7 @@ public class Effect {
         return duration;
     }
 
-    public void verminderDuration(){
+    public void verminderDuration(){ // vermindering duration na elke spelers beurt
         duration -= 1;
     }
 

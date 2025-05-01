@@ -17,28 +17,50 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/** Helperklasse voor het aanmaken en beheren van krachtknoppen.**/
+
 public class PowerButtonHelper {
-    private final List<Button> powerButtons = new ArrayList<>();
+    private final List<Button> powerButtons = new ArrayList<>();  // Lijst van alle krachtknoppen
     private final GameState gameState;
-    private final Consumer<Power> onPowerSelected;
+    private final Consumer<Power> onPowerSelected;  // Callback voor krachtselectie
+
 
     public PowerButtonHelper(GameState gameState, Consumer<Power> onPowerSelected) {
         this.gameState = gameState;
         this.onPowerSelected = onPowerSelected;
     }
 
+    // Maakt een nieuwe krachtknop aan
     public Button createPowerButton(Power power) {
         Button button = new Button();
+        // Basisstyling instellen
         button.getStyleClass().add("minion-button");
         button.setMaxWidth(Double.MAX_VALUE);
         button.setMinHeight(100);
         button.setPrefHeight(75);
-        button.setUserData(power);
+        button.setUserData(power);  // Sla kracht op in knop
 
         HBox mainContent = new HBox(15);
         mainContent.setAlignment(Pos.CENTER_LEFT);
 
-        // Power image
+        // Krachtafbeelding toevoegen
+        ImageView powerImage = createPowerImageView(power);
+
+        // Detailscontainer aanmaken
+        HBox detailsContainer = createDetailsContainer(power);
+
+        mainContent.getChildren().addAll(powerImage, detailsContainer);
+        button.setGraphic(mainContent);
+
+        // Klikhandler toevoegen
+        button.setOnAction(e -> onPowerSelected.accept(power));
+        powerButtons.add(button);
+
+        return button;
+    }
+
+    //Maakt de afbeeldingsweergave voor een kracht
+    private ImageView createPowerImageView(Power power) {
         ImageView powerImage = new ImageView();
         try {
             powerImage.setImage(ImageLoader.loadPowerImage(power.getType()));
@@ -48,13 +70,27 @@ public class PowerButtonHelper {
         powerImage.setFitHeight(100);
         powerImage.setFitWidth(100);
         powerImage.setPreserveRatio(true);
-        powerImage.setClip(new Circle(50, 50, 40));
+        powerImage.setClip(new Circle(50, 50, 40));  // Ronde clip voor afbeelding
+        return powerImage;
+    }
 
-        // Details container
+    // Creëert de detailscontainer met tekst en statistieken
+    private HBox createDetailsContainer(Power power) {
         HBox detailsContainer = new HBox(70);
         detailsContainer.setAlignment(Pos.CENTER_LEFT);
 
-        // Text details
+        // Tekstdetails aanmaken
+        VBox textDetails = createTextDetails(power);
+
+        // Statistiekencontainer aanmaken
+        VBox statsContainer = createPowerStats(power);
+
+        detailsContainer.getChildren().addAll(textDetails, statsContainer);
+        return detailsContainer;
+    }
+
+    //Maakt tekstdetails aan (naam en effect)
+    private VBox createTextDetails(Power power) {
         VBox textDetails = new VBox(5);
         textDetails.setAlignment(Pos.CENTER_LEFT);
 
@@ -72,32 +108,21 @@ public class PowerButtonHelper {
         effectLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
 
         textDetails.getChildren().addAll(nameLabel, effectLabel);
-
-        // Stats container
-        VBox statsContainer = createPowerStats(power);
-
-        detailsContainer.getChildren().addAll(textDetails, statsContainer);
-        mainContent.getChildren().addAll(powerImage, detailsContainer);
-        button.setGraphic(mainContent);
-
-        button.setOnAction(e -> {
-            onPowerSelected.accept(power);
-        });
-
-        powerButtons.add(button);
-
-        return button;
+        return textDetails;
     }
 
+    //Bouwt de statistiekensectie voor de kracht
     private VBox createPowerStats(Power power) {
         VBox statsContainer = new VBox(5);
         statsContainer.setAlignment(Pos.CENTER);
 
+        // Bepaal juist icoon voor waarde
         Image valueIcon = switch (power.getType().toLowerCase()) {
             case "healing" -> ImageLoader.loadHealthIcon();
             default -> ImageLoader.loadAttackIcon();
         };
 
+        // Maak statistiekregels
         HBox valueBox = StatBoxFactory.createStatBox(
                 valueIcon,
                 String.valueOf(power.getValue()),
@@ -112,10 +137,11 @@ public class PowerButtonHelper {
 
         HBox durationBox = StatBoxFactory.createStatBox(
                 ImageLoader.loadDurationIcon(),
-                "1",
+                "1",  // Vaste waarde voor demonstratie
                 "duration-stat"
         );
 
+        // Voeg relevante stats toe op basis van krachttype
         statsContainer.getChildren().add(valueBox);
         if (!power.getType().equalsIgnoreCase("lightning")) {
             statsContainer.getChildren().add(radiusBox);
@@ -127,14 +153,18 @@ public class PowerButtonHelper {
         return statsContainer;
     }
 
+    // Update de stijl van alle krachtknoppen op basis van spelstatus
     public void updatePowerButtonsStyle() {
         powerButtons.forEach(btn -> {
             btn.getStyleClass().remove("selected");
+            btn.getStyleClass().remove("unaffordable");
 
             Power power = (Power) btn.getUserData();
-            if (gameState.getPowerUsed() >= 2 || gameState.getPowerBoolean()) {
+            boolean isOnbetaalbaar = gameState.getPowerUsed() >= 2 || gameState.getPowerBoolean();
+
+            if (isOnbetaalbaar) {
                 btn.getStyleClass().add("unaffordable");
-            }else if (power == gameState.getSelectedPower()) {
+            } else if (power == gameState.getSelectedPower()) {
                 btn.getStyleClass().add("selected");
             }
         });

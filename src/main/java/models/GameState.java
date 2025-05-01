@@ -7,31 +7,43 @@ import models.parsers.EffectParser;
 import models.powers.Power;
 import java.util.*;
 
-
+/**  Model met de alle hoofdzakelijke info van het spel  **/
 public class GameState {
-    private final Map<Tile, Minion> speler1Minions = new HashMap<>();
-    private final Map<Tile, Minion> speler2Minions = new HashMap<>();
-    private Minion selectedMinion;
-    private Tile selectedTile;
-    private Polygon currentlySelectedHex = null;
-    private Minion currentMinion = null;
-    private Tile currentlySelectedTile = null;
-    private boolean isSpeler1AanZet = true;
-    private int speler1Coins;
-    private int speler2Coins;
-    private final String speler1Naam;
-    private final String speler2Naam;
-    private boolean placementPhase = true;
-    private int placementTurns = 0;
-    private List<Tile> tiles;
-    private List<Effect> allEffects;
-    private Power selectedPower = null;
-    private int hasUsedPower1 = 0;
-    private int hasUsedPower2 = 0;
-    private int totalMinions = 2;
-    private boolean powerIsUsed = false;
-    private final Set<Minion> processedMinions = new HashSet<>();
-    private final GameActions gameActions = new GameActions();
+
+    // Speler-specifieke data
+    private final Map<Tile, Minion> speler1Minions = new HashMap<>();  // Minions van speler 1 en hun posities
+    private final Map<Tile, Minion> speler2Minions = new HashMap<>();  // Minions van speler 2 en hun posities
+    private int speler1Coins;  // Munten van speler 1
+    private int speler2Coins;  // Munten van speler 2
+    private final String speler1Naam;  // Naam van speler 1
+    private final String speler2Naam;  // Naam van speler 2
+
+    // Spelstatus variabelen
+    private boolean isSpeler1AanZet = true;  // Geeft aan wiens beurt het is
+    private boolean placementPhase = true;    // Geeft aan of we in de plaatsingsfase zitten
+    private int placementTurns = 0;           // Teller voor plaatsingsbeurten
+
+    // Selectie gerelateerde variabelen
+    private Minion selectedMinion;    // Momenteel geselecteerde minion in UI
+    private Tile selectedTile;        // Momenteel geselecteerde tegel in UI
+    private Polygon currentlySelectedHex;  // Geselecteerde hexagon in UI
+    private Minion currentMinion;     // Minion die aan de beurt is
+    private Tile currentlySelectedTile;  // Tegel die aan de beurt is
+
+    // Spel elementen
+    private final List<Tile> tiles;         // Alle tegels in het spel
+    private final List<Effect> allEffects;  // Alle beschikbare effecten
+    private Power selectedPower;      // Geselecteerde kracht/vaardigheid
+    private final Set<Minion> processedMinions = new HashSet<>();  // Minions die hun beurt hebben gehad
+
+    // Power management
+    private int hasUsedPower1 = 0;  // Aantal keren dat speler 1 een power heeft gebruikt
+    private int hasUsedPower2 = 0;  // Aantal keren dat speler 2 een power heeft gebruikt
+    private boolean powerIsUsed = false;  // Geeft aan of een power actief is
+
+    // Spelconfiguratie
+    private int totalMinions = 2;  // Totaal aantal minions in het spel (2 omdat anders het maar kan ook 1 zijn , als 0 kracht de game)
+    private final GameActions gameActions = new GameActions();  // Beheert actiestaten
 
 
 
@@ -57,6 +69,7 @@ public class GameState {
         isSpeler1AanZet = !isSpeler1AanZet;
         placementTurns+=1;
 
+        // Einde plaatsingsfase na 2 beurten
         if (placementPhase && placementTurns >= 2) {
             endPlacementPhase();
         }
@@ -132,6 +145,7 @@ public class GameState {
         if (!List.of("dirt", "forest", "mountains").contains(tile.getType())) return false;
         if (getSelectedMinion().getCost() > getCurrentCoins()) return false;
 
+        // Tijdens plaatsingsfase: alleen op eigen homebase
         if (isPlacementPhase()) {
             return (isSpeler1AanZet ? tile.getHomebase() == 1 : tile.getHomebase() == 2);
         }
@@ -231,7 +245,7 @@ public class GameState {
         return totalMinions;
     }
 
-
+    //resetten
     public void resetBeurtButton() {
         selectedPower = null;
         powerIsUsed = false;
@@ -243,7 +257,5 @@ public class GameState {
         if (!isPlacementPhase()){
             totalMinions = isSpeler1AanZet ? speler1Minions.size()  : speler2Minions.size();
         }
-
-
     }
 }
