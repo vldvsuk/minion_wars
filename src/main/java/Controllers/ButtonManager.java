@@ -60,6 +60,5 @@ public class ButtonManager {
             actions.setHasNoAction(false);
         }
     }
-
 }
 

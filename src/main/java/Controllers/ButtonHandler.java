@@ -1,6 +1,7 @@
 package Controllers;
 
 import javafx.scene.control.Button;
+import javafx.scene.shape.Polygon;
 import models.GameState;
 import models.GameActions;
 import models.grond.Tile;
@@ -135,8 +136,14 @@ public class ButtonHandler {
             minionButtons.forEach(btn -> btn.getStyleClass().remove("selected"));
         }
     }
+
+    public void handleBeurtButton(List<Polygon> hexList) {
+        gameState.switchPlayer();
+        actionController.getEffectProcessor().processEffects(hexList);
+        gameState.resetBeurtButton();
+        actions.resetActions();
+        gameState.resetProcessedMinions();
+        tileManager.resetAllOverlays();
+        tileManager.markHomebases();
+    }
 }
-
-
-
-

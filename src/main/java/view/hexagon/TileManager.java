@@ -13,11 +13,13 @@ import java.util.Set;
 
 public class TileManager {
     private final GameState gameState;
+    private final GameLogic gameLogic;
     private final List<Polygon> hexList;
 
-    public TileManager(GameState gameState, List<Polygon> hexList) {
+    public TileManager(GameState gameState,GameLogic gameLogic, List<Polygon> hexList) {
         this.gameState = gameState;
         this.hexList = hexList;
+        this.gameLogic = gameLogic;
     }
 
 
@@ -191,5 +193,21 @@ public class TileManager {
         overlayHex.setFill(Color.rgb(255, 255, 11, 0.3));
         overlayHex.setOpacity(0.7);
         overlayHex.setStroke(Color.GREEN);
+    }
+
+    public void updatePowerRangeVisuals(Tile centerTile) {
+        gameState.getGameActions().clearPowerTiles();
+        String powerType = gameState.getSelectedPower().getType().toLowerCase();
+        gameState.getGameActions().setPowerTiles(gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius()));
+        boolean hasValidTarget = switch (powerType) {
+            case "healing" -> gameLogic.hasFriendlyInRange(gameState.getGameActions().getPowerTiles());
+            case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(gameState.getGameActions().getPowerTiles());
+            default -> false;
+        };
+        if (hasValidTarget) {
+            highlightTiles(gameState.getGameActions().getPowerTiles(), Color.BLUE);
+        } else {
+            highlightTiles(gameState.getGameActions().getPowerTiles(), Color.GREEN);
+        }
     }
 }

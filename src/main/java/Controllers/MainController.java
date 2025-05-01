@@ -29,21 +29,18 @@ import view.hexagon.TileManager;
 import view.images.ImagePatternHelper;
 import view.panel.ActionPanel;
 import view.ui.GameView;
-import view.ui.InfoPanel;
 import view.ui.UIManager;
 
-public class Controller2 {
+public class MainController {
     private GameState gameState;
     private GameLogic gameLogic;
     private UIManager uiManager;
     private MinionButtonFactory buttonFactory;
     private HexagonFactory hexagonFactory;
-    private InfoPanel infoPanel;
     private TileManager tileManager;
     private GameView gameView;
     private GameActions actions;
     private ButtonManager buttonManager;
-    private EffectProcessor effectProcessor;
     private ActionController actionController;
     private ButtonHandler buttonHandler;
     private UIController uiController;
@@ -79,12 +76,10 @@ public class Controller2 {
         this.gameLogic = new GameLogic(gameState);
         this.buttonFactory = new MinionButtonFactory(gameState, minionButtons);
         this.uiManager = new UIManager(gameState, naamLabel, coinsLabel);
-        this.tileManager = new TileManager(gameState, hexList);
+        this.tileManager = new TileManager(gameState, gameLogic, hexList);
         this.gameView = new GameView(gameState);
-        this.uiController = new UIController(gameView,splitPane,coinImageView);
-        this.infoPanel = new InfoPanel(gameState);
+        this.uiController = new UIController(gameState, gameView, tileManager, splitPane, coinImageView);
         this.actions = gameState.getGameActions();
-        this.effectProcessor = new EffectProcessor(gameState, tileManager);
         this.actionController = new ActionController(gameState, tileManager);
         this.buttonHandler = new ButtonHandler(gameState, tileManager, actionController);
         this.actionPanel = new ActionPanel(
@@ -97,7 +92,6 @@ public class Controller2 {
                 this::handleTabChange
 
         );
-
         updateUI();
         createMinionButtons();
         createHexagons(tiles);
@@ -106,18 +100,11 @@ public class Controller2 {
 
     @FXML
     private void handleBeurtButton() {
-        gameState.switchPlayer();
-        effectProcessor.processEffects(hexList);
-        gameState.resetBeurtButton();
+        buttonHandler.handleBeurtButton(hexList);
         gameView.positionViewportForPlayer(gameScrollPane);
-        gameState.resetProcessedMinions();
-        tileManager.resetAllOverlays();
-        tileManager.markHomebases();
         updateUI();
-
         if (!gameState.isPlacementPhase()) {
             beurtButton.setDisable(true);
-            actions.resetActions();
             updateMinionCountLabel();
             checkTurnCompletion();
             actionPanel.updatePowerButtonsStyle();
@@ -151,7 +138,7 @@ public class Controller2 {
 
     private void handleHoverStart(Tile hoveredTile) {
         if (gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2) {
-            updatePowerRangeVisuals(hoveredTile);
+            tileManager.updatePowerRangeVisuals(hoveredTile);
         }
     }
 
@@ -194,7 +181,7 @@ public class Controller2 {
         if (!gameState.isPlacementPhase()) {
             tileManager.resetAllOverlays();
             if (clickedMinion != null) {
-                handleInfoPanel(tile, clickedMinion);
+                uiController.handleMinionInfo(tile, clickedMinion, labelBox);
             }
         }
         if (gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2) {
@@ -218,6 +205,7 @@ public class Controller2 {
         }
         if (!gameState.isPlacementPhase()) {
             //Bewegen
+
             if (actionController.canMove(tile)) {
                 actionController.handleMove(tile);
                 updateAfterAction();
@@ -240,14 +228,14 @@ public class Controller2 {
             if (!gameState.isOccupied(tile) && !gameState.isPlacementPhase()) {
                 if (gameState.getCurrentTile() == null) {
                     gameState.setCurrentTile(tile);
-                    selectTile(tile, overlayHex);
+                    uiController.handleTileInfo(tile, overlayHex, labelBox);
                 } else if (gameState.getCurrentTile() == tile) {
                     tileManager.resetAllOverlays();
                     labelBox.getChildren().clear();
                     gameState.setCurrentTile(null);
                 } else {
                     tileManager.resetAllOverlays();
-                    selectTile(tile, overlayHex);
+                    uiController.handleTileInfo(tile, overlayHex, labelBox);
                     gameState.setCurrentTile(tile);
                 }
                 return;
@@ -302,28 +290,6 @@ public class Controller2 {
         actionPanel.updatePowerButtonsStyle();
         checkVoorSpelEinde();
     }
-    private void handleInfoPanel(Tile tile, Minion clickedMinion) {
-        labelBox.getChildren().clear();
-        VBox nieuweVBox = infoPanel.generateMinionInfo(tile, clickedMinion);
-        labelBox.getChildren().add(nieuweVBox);
-        int aantalEffecten = clickedMinion.getActiveEffects().size();
-        labelBox.setMinHeight(100 + (aantalEffecten * 22));
-    }
-
-
-    private void selectTile(Tile tile, Polygon overlayHex) {
-        gameState.setSelectedTile(null);
-        if (!gameState.isPlacementPhase()) {
-            tileManager.resetAllOverlays();
-        }
-        tileManager.markSelected(overlayHex);
-        if (!gameState.isPlacementPhase()) {
-            labelBox.getChildren().clear();
-            HBox nieuweHBox = infoPanel.generateTileInfo(tile);
-            labelBox.getChildren().add(0, nieuweHBox);
-        }
-    }
-
 
     private void placeMinion(Tile tile, Polygon hex) {
         Minion original = gameState.getSelectedMinion();
@@ -464,22 +430,6 @@ public class Controller2 {
         checkTurnCompletion();
     }
 
-    private void updatePowerRangeVisuals(Tile centerTile) {
-        actions.clearPowerTiles();
-        String powerType = gameState.getSelectedPower().getType().toLowerCase();
-        actions.setPowerTiles(gameLogic.calculateBonusRange(centerTile, gameState.getSelectedPower().getRadius()));
-        boolean hasValidTarget = switch (powerType) {
-            case "healing" -> gameLogic.hasFriendlyInRange(actions.getPowerTiles());
-            case "fireball", "lightning" -> gameLogic.hasEnemyInAttackRange(actions.getPowerTiles());
-            default -> false;
-        };
-        if (hasValidTarget) {
-            tileManager.highlightTiles(actions.getPowerTiles(), Color.BLUE);
-        } else {
-            tileManager.highlightTiles(actions.getPowerTiles(), Color.GREEN);
-        }
-    }
-
     private void highlightReachableTiles() {
         tileManager.highlightTiles(actions.getReachableTiles(), Color.GREEN);
     }
@@ -493,6 +443,19 @@ public class Controller2 {
         if (winnaar != null) {
             toonEindScherm(winnaar);
         }
+    }
+
+    private void updateMinionCountLabel() {
+        if (actions.getMinionProcessed() <= gameState.getTotalMinions()) {
+            uiController.updateMinionCountLabel(minionCountLabel, actions.getMinionProcessed(), gameState.getTotalMinions());
+        }
+        updateActionButtonsState();
+    }
+    private void checkTurnCompletion() {
+       actionController.checkTurn(beurtButton);
+    }
+    private void updateActionButtonsState() {
+        buttonManager.updateButtons();
     }
 
     private void toonEindScherm(String winnaar) {
@@ -511,26 +474,5 @@ public class Controller2 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void updateMinionCountLabel() {
-        if (actions.getMinionProcessed() <= gameState.getTotalMinions()) {
-            uiController.updateMinionCountLabel(minionCountLabel, actions.getMinionProcessed(), gameState.getTotalMinions());
-        }
-        updateActionButtonsState();
-    }
-
-    private void checkTurnCompletion() {
-        if (actions.getMinionProcessed() >= gameState.getTotalMinions()) {
-            beurtButton.setDisable(false);
-            tileManager.resetAllOverlays();
-            gameState.setSelectedTile(null);
-            gameState.setCurrentlySelectedHex(null);
-            gameState.setCurrentMinion(null);
-
-        }
-    }
-    private void updateActionButtonsState() {
-        buttonManager.updateButtons();
     }
 }

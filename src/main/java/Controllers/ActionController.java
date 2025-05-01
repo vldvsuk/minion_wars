@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.scene.control.Button;
 import models.GameActions;
 import models.GameState;
 import models.effects.Effect;
@@ -15,11 +16,13 @@ public class ActionController {
     private final GameState gameState;
     private final TileManager tileManager;
     private GameActions actions;
+    private EffectProcessor effectProcessor;
 
     public ActionController(GameState gameState, TileManager tileManager) {
         this.gameState = gameState;
         this.tileManager = tileManager;
         this.actions = gameState.getGameActions();
+        this.effectProcessor = new EffectProcessor(gameState, tileManager);
     }
 
     public boolean canMove(Tile tile) {
@@ -166,6 +169,19 @@ public class ActionController {
         gameState.setSelectedTile(null);
     }
 
+    public void checkTurn(Button beurtButton){
+        if (actions.getMinionProcessed() >= gameState.getTotalMinions()) {
+            beurtButton.setDisable(false);
+            tileManager.resetAllOverlays();
+            gameState.setSelectedTile(null);
+            gameState.setCurrentlySelectedHex(null);
+            gameState.setCurrentMinion(null);
 
+        }
+    }
+
+    public EffectProcessor getEffectProcessor() {
+        return effectProcessor;
+    }
 }
 

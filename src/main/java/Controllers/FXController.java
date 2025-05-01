@@ -84,18 +84,11 @@ public class FXController {
             Scene nieuweScene = new Scene(fxmlLoader.load(), 1600, 900);
             stage.setScene(nieuweScene);
 
-            Controller2 controller2 = fxmlLoader.getController();
-            controller2.setInfo(naamSpeler1, naamSpeler2, Integer.parseInt(muntenText));
+            MainController mainController = fxmlLoader.getController();
+            mainController.setInfo(naamSpeler1, naamSpeler2, Integer.parseInt(muntenText));
             stage.centerOnScreen();
             stage.setResizable(true);
         }
 
     }
 }
-
-
-
-
-
-
-

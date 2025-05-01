@@ -12,7 +12,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import models.GameState;
-import view.hexagon.TileManager;
 import view.images.ImageLoader;
 
 public class GameView {
