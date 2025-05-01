@@ -7,6 +7,7 @@ import models.GameState;
 import models.grond.Tile;
 import models.minions.Minion;
 import view.panel.ActionPanel;
+/** Controller die kijkt of er een bepaalde button kan gebruikt worden **/
 
 public class ButtonManager {
     private final ActionPanel actionPanel;

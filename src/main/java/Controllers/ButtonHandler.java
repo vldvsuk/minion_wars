@@ -8,9 +8,9 @@ import models.grond.Tile;
 import models.minions.Minion;
 import models.powers.Power;
 import view.hexagon.TileManager;
-
 import java.util.List;
 
+/**Controller voor button management en de interacties met de model**/
 public class ButtonHandler {
     private final GameState gameState;
     private final TileManager tileManager;
@@ -31,6 +31,7 @@ public class ButtonHandler {
         gameState.powerUse();
         tileManager.resetAllOverlays();
     }
+
     public void handleSpecialAttack(){
         actions.setBasisAttacked(false);
         actions.setSpecialAttack(true);
@@ -63,7 +64,7 @@ public class ButtonHandler {
             Minion minion = gameState.getPlacedMinion(gameState.getSelectedTile());
             if (minion != null) {
                 int newDefence = Math.min(
-                        minion.getCurrentDefence() + 2,
+                        minion.getCurrentDefence() + 2,   //controle zodat een minion niet meer defence heeft dan in de xml
                         minion.getDefence()
                 );
                 minion.setCurrentDefence(newDefence);
@@ -112,7 +113,7 @@ public class ButtonHandler {
         tileManager.resetAllOverlays();
     }
 
-    public void updateButtonStates(List<Button> minionButtons) {
+    public void updateButtonStates(List<Button> minionButtons) { // de uitzicht van de minions buttons
         boolean anyAffordable = false;
 
         for (Button button : minionButtons) {
@@ -137,7 +138,7 @@ public class ButtonHandler {
         }
     }
 
-    public void handleBeurtButton(List<Polygon> hexList) {
+    public void handleBeurtButton(List<Polygon> hexList) { // de reset na elke beurt
         gameState.switchPlayer();
         actionController.getEffectProcessor().processEffects(hexList);
         gameState.resetBeurtButton();

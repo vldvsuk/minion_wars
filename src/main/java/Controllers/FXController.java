@@ -8,8 +8,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import models.parsers.XmlLoader;
-
 import java.io.IOException;
+
+/** Controller die de eerste fase afhandeld **/
 
 public class FXController {
     @FXML
@@ -56,6 +57,7 @@ public class FXController {
         speler2ErrorLabel.setOpacity(0);
         muntenErrorLabel.setOpacity(0);
 
+        // checken of de gegevens juist zijn
         try {
             if (naamSpeler1.isEmpty()) {
                 speler1ErrorLabel.setOpacity(1);
@@ -79,7 +81,7 @@ public class FXController {
             fout = true;
         }
 
-        if (!fout) {
+        if (!fout) { // load van de Main controller en begin van de spel
             FXMLLoader fxmlLoader = new FXMLLoader(MinionWars.class.getResource("SpelBegint.fxml"));
             Scene nieuweScene = new Scene(fxmlLoader.load(), 1600, 900);
             stage.setScene(nieuweScene);

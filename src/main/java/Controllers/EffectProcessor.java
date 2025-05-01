@@ -7,10 +7,10 @@ import models.grond.Tile;
 import models.minions.Minion;
 import view.hexagon.HexagonData;
 import view.hexagon.TileManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
+/** Controller die de effecten afhandeld na elke beurt **/
 public class EffectProcessor {
     private final GameState gameState;
     private final TileManager tileManager;
@@ -31,7 +31,7 @@ public class EffectProcessor {
                     continue;
                 }
                 for (Effect effect : effectsToProcess) {
-                    if(gameState.isMinionOwnedByCurrentPlayer(tile)){
+                    if(gameState.isMinionOwnedByCurrentPlayer(tile)){ // een duration verminderen enkel bij de minions van current speler
                         effect.verminderDuration();
                     }
 

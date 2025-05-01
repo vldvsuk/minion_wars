@@ -6,7 +6,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
 import javafx.scene.shape.Polygon;
 import models.GameState;
 import models.grond.Tile;
@@ -14,6 +13,8 @@ import models.minions.Minion;
 import view.hexagon.TileManager;
 import view.ui.GameView;
 import view.ui.InfoPanel;
+
+/**  View-helper, verandering van de info-panel en aantal processed minions **/
 
 public class UIController {
 
@@ -31,7 +32,7 @@ public class UIController {
         gameView.initializeUI(splitPane, coinImageView);
     }
 
-    public void updateMinionCountLabel(Label label, int processed, int total) {
+    public void updateMinionCountLabel(Label label, int processed, int total) { // countLabel update
         label.setText(processed + "/" + total);
     }
 
@@ -39,7 +40,7 @@ public class UIController {
         gameView.setupActionButtons(beurtButton, rustButton);
     }
 
-    public void handleMinionInfo(Tile tile, Minion clickedMinion, VBox labelBox) {
+    public void handleMinionInfo(Tile tile, Minion clickedMinion, VBox labelBox) { // minion info panel
         labelBox.getChildren().clear();
         VBox nieuweVBox = infoPanel.generateMinionInfo(tile, clickedMinion);
         labelBox.getChildren().add(nieuweVBox);
@@ -47,7 +48,7 @@ public class UIController {
         labelBox.setMinHeight(100 + (aantalEffecten * 22));
     }
 
-    public void handleTileInfo(Tile tile, Polygon overlayHex, VBox labelBox) {
+    public void handleTileInfo(Tile tile, Polygon overlayHex, VBox labelBox) { // tile info panel
         gameState.setSelectedTile(null);
         tileManager.resetAllOverlays();
         tileManager.markSelected(overlayHex);

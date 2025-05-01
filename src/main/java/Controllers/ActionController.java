@@ -8,15 +8,16 @@ import models.grond.Tile;
 import models.minions.Minion;
 import models.powers.Power;
 import view.hexagon.TileManager;
-
 import java.util.Set;
+
+/**Controller voor het actions, verantwoordelijk voor mogelijkheid om een ectie met de minion te doen**/
 
 public class ActionController {
 
     private final GameState gameState;
     private final TileManager tileManager;
-    private GameActions actions;
-    private EffectProcessor effectProcessor;
+    private final GameActions actions;
+    private final EffectProcessor effectProcessor;
 
     public ActionController(GameState gameState, TileManager tileManager) {
         this.gameState = gameState;
@@ -25,14 +26,14 @@ public class ActionController {
         this.effectProcessor = new EffectProcessor(gameState, tileManager);
     }
 
-    public boolean canMove(Tile tile) {
+    public boolean canMove(Tile tile) { // checken of de minion kan bewegen
         return "Bewegen".equals(actions.getCurrentTab())
                 && gameState.getSelectedTile() != null
                 && actions.getReachableTiles().contains(tile)
                 && !actions.hasMoved();
     }
 
-    public boolean canAttack(Tile tile) {
+    public boolean canAttack(Tile tile) { // checken of de minion kan aanvallen
         return "Aanvallen".equals(actions.getCurrentTab())
                 && gameState.getSelectedTile() != null
                 && actions.getAttackableTiles().contains(tile)
@@ -41,8 +42,11 @@ public class ActionController {
                 && !actions.hasAttacked()
                 && (actions.isBasisAttacked() || actions.isSpecialAttack());
     }
+    public boolean canUseBonus() { // checken of de minion kan bonus gebruiken
+        return gameState.getSelectedPower() != null && !gameState.getPowerBoolean() && gameState.getPowerUsed() < 2;
+    }
 
-    public void handleMove(Tile targetTile) {
+    public void handleMove(Tile targetTile) { // move logica
         Tile originalTile = gameState.getSelectedTile();
         Minion minion = gameState.getPlacedMinion(originalTile);
         gameState.removeMinion(originalTile);
@@ -62,7 +66,7 @@ public class ActionController {
         tileManager.resetAllOverlays();
     }
 
-    public void handleAttack(Tile tile) {
+    public void handleAttack(Tile tile) { // attack logica
         Minion attacker = gameState.getPlacedMinion(gameState.getSelectedTile());
         Minion defender = gameState.getPlacedMinion(tile);
 
@@ -102,7 +106,7 @@ public class ActionController {
         }
     }
 
-    public void handlePower(Set<Tile> powerTiles) {
+    public void handlePower(Set<Tile> powerTiles) { // bonus logica
         Power power = gameState.getSelectedPower();
         if (power == null) return;
 
@@ -128,7 +132,7 @@ public class ActionController {
             ));
         }
 
-        // Effecten toepassen
+        // Effecten toepassen voor de krachten die de effect hebben
         if (power.hasEffect() && !isOwnMinion) {
             applyPowerEffect(power, minion);
         }
@@ -153,7 +157,8 @@ public class ActionController {
             tileManager.resetTileVisual(tile);
         }
     }
-    public void handleAddMinion(Minion minion){
+
+    public void handleAddMinion(Minion minion){ // als er geen actie mogelijk is
         gameState.addProcessedMinion(minion);
         actions.oneMoreMinionProcessed();
         gameState.setCurrentMinion(null);
@@ -162,14 +167,15 @@ public class ActionController {
         gameState.setSelectedTile(null);
         tileManager.resetAllOverlays();
     }
-    public void resetNewAction(){
+
+    public void resetNewAction(){  // niuewe minion kiezen voor de behandeling
         actions.setHasMoved(false);
         actions.setHasAttacked(false);
         gameState.setCurrentMinion(null);
         gameState.setSelectedTile(null);
     }
 
-    public void checkTurn(Button beurtButton){
+    public void checkTurn(Button beurtButton){ // kijken of alle minions behandeld zijn
         if (actions.getMinionProcessed() >= gameState.getTotalMinions()) {
             beurtButton.setDisable(false);
             tileManager.resetAllOverlays();

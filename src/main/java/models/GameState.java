@@ -233,11 +233,11 @@ public class GameState {
 
 
     public void resetBeurtButton() {
-        setSelectedPower(null);
-        setPowerBoolean(false);
-        setSelectedMinion(null);
-        setSelectedTile(null);
-        setCurrentlySelectedHex(null);
+        selectedPower = null;
+        powerIsUsed = false;
+        selectedMinion = null;
+        selectedTile = null;
+        currentlySelectedHex = null;
         currentlySelectedTile = null;
         currentMinion = null;
         if (!isPlacementPhase()){
