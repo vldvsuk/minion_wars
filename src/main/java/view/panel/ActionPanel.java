@@ -6,36 +6,34 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import models.GameState;
-import models.powers.Power;
 import view.button.PowerButtonHelper;
-import java.util.function.Consumer;
 /** Klasse di zorgt voor setups al de tabs en nieuwe buttons **/
 public class ActionPanel {
+
+    private final GameState gameState;
     private Button specialAttackButton;
     private Button healButton;
     private Button stayButton;
     private Button basicAttackButton;
 
-
+    private final Runnable onTabChanged;
     private final Runnable onStayAction;
     private final Runnable onBasicAttackAction;
     private final Runnable onHealAction;
     private final Runnable onSpecialAttackAction;
-    private final Consumer<String> onTabChanged;
     private final PowerButtonHelper powerButtonHelper;
 
     public ActionPanel(GameState gameState, Runnable onStayAction,
                        Runnable onBasicAttackAction,
                        Runnable onHealAction,
-                       Runnable onSpecialAttackAction,
-                       Consumer<Power> onPowerSelected,
-                       Consumer<String> onTabChanged) {
+                       Runnable onSpecialAttackAction,Runnable onTabChanged) {
+        this.gameState = gameState;
         this.onStayAction = onStayAction;
         this.onBasicAttackAction = onBasicAttackAction;
         this.onHealAction = onHealAction;
-        this.onTabChanged = onTabChanged;
         this.onSpecialAttackAction = onSpecialAttackAction;
-        this.powerButtonHelper = new PowerButtonHelper(gameState, onPowerSelected);
+        this.onTabChanged = onTabChanged;
+        this.powerButtonHelper = new PowerButtonHelper(gameState);
     }
 
     public VBox initializePanel() {
@@ -74,7 +72,9 @@ public class ActionPanel {
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab != null) {
-                onTabChanged.accept(newTab.getText());
+                gameState.getGameActions().setCurrentTab(newTab.getText());
+                gameState.setSelectedPower(null);
+                onTabChanged.run();
             }
         });
         return tabBox;

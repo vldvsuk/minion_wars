@@ -15,19 +15,16 @@ import models.powers.Power;
 import view.images.ImageLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /** Helperklasse voor het aanmaken en beheren van krachtknoppen.**/
 
 public class PowerButtonHelper {
     private final List<Button> powerButtons = new ArrayList<>();  // Lijst van alle krachtknoppen
     private final GameState gameState;
-    private final Consumer<Power> onPowerSelected;  // Callback voor krachtselectie
 
 
-    public PowerButtonHelper(GameState gameState, Consumer<Power> onPowerSelected) {
+    public PowerButtonHelper(GameState gameState) {
         this.gameState = gameState;
-        this.onPowerSelected = onPowerSelected;
     }
 
     // Maakt een nieuwe krachtknop aan
@@ -53,7 +50,11 @@ public class PowerButtonHelper {
         button.setGraphic(mainContent);
 
         // Klikhandler toevoegen
-        button.setOnAction(e -> onPowerSelected.accept(power));
+        button.setOnAction(e -> {
+            gameState.setSelectedPower(power);
+            updatePowerButtonsStyle(); // Update UI direct
+        });
+
         powerButtons.add(button);
 
         return button;

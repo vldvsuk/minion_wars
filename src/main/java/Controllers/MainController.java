@@ -21,7 +21,6 @@ import models.parsers.MinionParser;
 import java.io.IOException;
 import java.util.*;
 import models.grond.Tile;
-import models.powers.Power;
 import view.button.MinionButtonFactory;
 import view.hexagon.HexagonData;
 import view.hexagon.HexagonFactory;
@@ -96,7 +95,6 @@ public class MainController {
                 this::handleBasicAttack,
                 this::handleHeal,
                 this::onSpecialAttackAction,
-                this::handlePowerSelect,
                 this::handleTabChange
 
         );
@@ -414,15 +412,7 @@ public class MainController {
         updateActionButtonsState();
 
     }
-
-    private void handlePowerSelect(Power power) {
-        buttonHandler.handlePowerSelect(power);
-        actionPanel.updatePowerButtonsStyle();
-    }
-
-    private void handleTabChange(String tabTitle) {
-        actions.setCurrentTab(tabTitle);
-        gameState.setSelectedPower(null);
+    private void handleTabChange() {
         if (gameState.getSelectedTile() != null) {
             Tile tile = gameState.getSelectedTile();
             Minion minion = gameState.getPlacedMinion(tile);
